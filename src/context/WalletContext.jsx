@@ -1,8 +1,8 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 
-export const WalletDataContext = createContext();
+const WalletDataContext = createContext();
 
-const WalletContext = ({ children }) => {
+export const WalletContext = ({ children }) => {
 	const [wallet, setWallet] = useState({});
 	const [walletAddress, setWalletAddress] = useState("");
 	return (
@@ -16,4 +16,4 @@ const WalletContext = ({ children }) => {
 	);
 };
 
-export const useWallet = () => useContext(WalletContext);
+export const useWallet = () => useContext(WalletDataContext);

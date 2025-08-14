@@ -24,8 +24,14 @@ export const addData = async (data) => {
 	await db.put(userStore, data);
 };
 
+// get data by id
+export const getDataById = async (id) => {
+	const db = await initDB();
+	return await db.get(userStore, id);
+};
+
 // get specific data from store
-export const getData = async (email) => {
+export const getDataByEmail = async (email) => {
 	const db = await initDB();
 	return await db.getFromIndex(userStore, "email", email);
 };

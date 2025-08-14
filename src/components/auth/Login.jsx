@@ -1,11 +1,9 @@
-import { nanoid } from "nanoid";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bcrypt from "bcryptjs";
 import Label from "../common/Label";
-import { getData, updateData } from "../../utils/idb";
+import { getDataByEmail } from "../../utils/idb";
 import Swal from "sweetalert2";
-import { UserDataContext } from "../../context/UserContext";
 import toast from "react-hot-toast";
 
 export const showUserNotFoundError = () => {
@@ -74,7 +72,7 @@ const Login = () => {
 		password: "",
 	});
 	const navigate = useNavigate();
-	const { userData, setuserData } = useContext(UserDataContext);
+	const [userData, setuserData] = useState({});
 	const [inputs, setinputs] = useState(
 		Array.from({ length: 12 }, (_, i) => i + 1)
 	);
@@ -127,7 +125,7 @@ const Login = () => {
 
 		// check login details
 		const { email, password } = loginDetails ?? loginDetails;
-		const user = await getData(email);
+		const user = await getDataByEmail(email);
 		// console.log(user);
 		if (!user) {
 			return showUserNotFoundError();
@@ -137,10 +135,21 @@ const Login = () => {
 
 		if (!isMatch) return showInvalidPasswordError();
 
+		const isFirstLogin = localStorage.getItem(`firstLogin_${email}`) === "true";
+
 		setuserData(user);
 
-		setcurrentStep(2);
-		setprogressWidth(75);
+		if (isFirstLogin) {
+			// Show recovery phrase
+			setcurrentStep(2);
+			setprogressWidth(75);
+		} else {
+			// Skip to final login
+			handleFinalLogin(user);
+		}
+
+		// console.log(user);
+
 		e.stopPropagation();
 	};
 
@@ -152,35 +161,45 @@ const Login = () => {
 		}));
 	};
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-
-		const arr = Object.values(recoveryPhrase);
-		const storedPhrase = userData?.recoveryPhrase;
-		const checkPhrase = storedPhrase.every((elem, idx) => {
-			return elem === arr[idx];
-		});
-
-		if (!checkPhrase) {
-			return phraseError();
-		}
+	const handleFinalLogin = async () => {
+		if (!userData) return;
 
 		showLoginSuccessful();
-		setloginDetails({
-			email: "",
-			password: "",
-		});
+		setloginDetails({ email: "", password: "" });
+
 		const token = crypto.randomUUID();
-		localStorage.setItem("token", token);
-		toast.success("Token set successfully!!");
+		localStorage.setItem("metaWallToken", token);
+
+		// console.log("user-------------", user);
+		localStorage.setItem("loggedUserId", userData.id);
+
+		// Mark first login as completed
+		localStorage.setItem(`firstLogin_${loginDetails?.email}`, "false");
 
 		setTimeout(() => {
 			navigate("/home");
 		}, 1500);
 	};
 
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+
+		const arr = Object.values(recoveryPhrase);
+		const storedPhrase = userData?.recoveryPhrase;
+		const checkPhrase = storedPhrase.every((elem, idx) => elem === arr[idx]);
+
+		if (!checkPhrase) {
+			phraseError();
+			return;
+		}
+
+		handleFinalLogin();
+	};
+
 	useEffect(() => {
-		console.log(userData?.recoveryPhrase);
+		if (userData && currentStep === 1) {
+			handleFinalLogin();
+		}
 	}, [userData]);
 
 	// console.log(Object.values(recoveryPhrase));

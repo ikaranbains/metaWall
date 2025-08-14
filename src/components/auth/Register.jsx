@@ -104,7 +104,7 @@ const Register = () => {
 
 		//validation
 		let errors = validate(userDetails);
-		console.log(errors);
+		// console.log(errors);
 		setformErrors(errors);
 		let length = Object.keys(errors).length;
 		if (length > 0) {
@@ -117,21 +117,24 @@ const Register = () => {
 		e.stopPropagation();
 	};
 
-	const createWallet = () => {
-		const web3 = new Web3()
-	}
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-
-		createWallet();
-
+		const web3 = new Web3("https://ethereum-sepolia-rpc.publicnode.com");
+		const account = web3.eth.accounts.create();
+		setWallet(account);
+		// console.log(wallet);
 		const pass = await hashPassword(userDetails?.password);
+		// toast.success("Token set successfully!!");
+
 		await addData({
 			...userDetails,
 			password: pass,
 			recoveryPhrase: recoveryPhrase,
+			userWallet: [
+				{ account: account.address, privateKey: account.privateKey },
+			],
 		});
+		localStorage.setItem(`firstLogin_${userDetails?.email}`, "true");
 		showRegistrationSuccess();
 		setuserDetails({
 			id: "",

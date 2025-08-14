@@ -4,6 +4,7 @@ export const UserDataContext = createContext();
 
 const UserContext = ({ children }) => {
 	const [userData, setuserData] = useState();
+	// console.log("userData", userData);
 	return (
 		<div>
 			<UserDataContext.Provider value={{ userData, setuserData }}>
