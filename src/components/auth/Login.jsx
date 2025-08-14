@@ -3,9 +3,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bcrypt from "bcryptjs";
 import Label from "../common/Label";
-import { getData } from "../../utils/idb";
+import { getData, updateData } from "../../utils/idb";
 import Swal from "sweetalert2";
 import { UserDataContext } from "../../context/UserContext";
+import toast from "react-hot-toast";
 
 export const showUserNotFoundError = () => {
 	Swal.fire({
@@ -44,6 +45,28 @@ export const showInvalidPasswordError = () => {
 		},
 	});
 };
+
+export const showLoginSuccessful = () => {
+	Swal.fire({
+		title: "<strong>Login Successful</strong>",
+		html: "<p>Welcome! You’ve successfully logged in.</p>",
+		icon: "success",
+		background: "#ffffff",
+		iconColor: "#000000",
+		confirmButtonText: "Continue",
+		confirmButtonColor: "#000000",
+		color: "#000000",
+		customClass: {
+			title: "text-xl font-semibold",
+			htmlContainer: "text-base",
+			popup: "rounded-lg shadow-lg",
+			confirmButton: "px-6 py-2 rounded text-white",
+		},
+	});
+};
+
+const phraseError = () =>
+	toast.error("Recovery Phrase in wrong, please enter correct phrase!!");
 
 const Login = () => {
 	const [loginDetails, setloginDetails] = useState({
@@ -133,22 +156,27 @@ const Login = () => {
 		e.preventDefault();
 
 		const arr = Object.values(recoveryPhrase);
-		for (let key of arr) {
-			if (arr[key] === userData?.recoveryPhrase[key]) {
-				console.log("matched",arr[key], userData.recoveryPhrase[key]);
-			}
-			console.log("not matched",arr[key], userData.recoveryPhrase[key]);
+		const storedPhrase = userData?.recoveryPhrase;
+		const checkPhrase = storedPhrase.every((elem, idx) => {
+			return elem === arr[idx];
+		});
+
+		if (!checkPhrase) {
+			return phraseError();
 		}
 
-		// showRegistrationSuccess();
-		// setloginDetails({
-		// 	email: "",
-		// 	password: "",
-		// });
+		showLoginSuccessful();
+		setloginDetails({
+			email: "",
+			password: "",
+		});
+		const token = crypto.randomUUID();
+		localStorage.setItem("token", token);
+		toast.success("Token set successfully!!");
 
-		// setTimeout(() => {
-		// 	navigate("/home");
-		// }, 1000);
+		setTimeout(() => {
+			navigate("/home");
+		}, 1500);
 	};
 
 	useEffect(() => {

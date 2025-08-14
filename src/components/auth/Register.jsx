@@ -8,6 +8,8 @@ import { FaEyeSlash } from "react-icons/fa6";
 import { nanoid } from "nanoid";
 import { useNavigate } from "react-router-dom";
 import Label from "../common/Label";
+import { useWallet } from "../../context/WalletContext";
+import Web3 from "web3";
 window.Buffer = Buffer;
 
 export const showRegistrationSuccess = () => {
@@ -42,6 +44,7 @@ const Register = () => {
 		password: "",
 	});
 	const navigate = useNavigate();
+	const { wallet, setWallet } = useWallet();
 
 	const [recoveryPhrase, setrecoveryPhrase] = useState(() => {
 		const arr = generateMnemonic().split(" ");
@@ -114,8 +117,15 @@ const Register = () => {
 		e.stopPropagation();
 	};
 
+	const createWallet = () => {
+		const web3 = new Web3()
+	}
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
+		createWallet();
+
 		const pass = await hashPassword(userDetails?.password);
 		await addData({
 			...userDetails,
@@ -129,10 +139,16 @@ const Register = () => {
 			email: "",
 			password: "",
 		});
+		console.log(recoveryPhrase);
 		setTimeout(() => {
 			navigate("/login");
 		}, 1000);
 	};
+
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		if (token) return navigate("/home");
+	}, []);
 
 	return (
 		<div className="min-h-full w-full flex items-center py-20 flex-col">

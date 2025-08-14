@@ -1,5 +1,4 @@
 import { openDB } from "idb";
-import Swal from "sweetalert2";
 
 const dbName = "metaWallet";
 const userStore = "users";
@@ -23,7 +22,6 @@ export const initDB = async () => {
 export const addData = async (data) => {
 	const db = await initDB();
 	await db.put(userStore, data);
-	new Swal("Data Added Sucessfully!!");
 };
 
 // get specific data from store
@@ -47,12 +45,11 @@ export const deleteData = async (id) => {
 // update data in store
 export const updateData = async (newData, id) => {
 	const db = await initDB();
-	const existing = db.get(userStore, id);
+	const existing = await db.get(userStore, id);
 
 	if (!existing) throw new Error("User not found!!");
 
 	const updatedData = { ...existing, ...newData };
 
 	await db.put(userStore, updatedData);
-	new Swal("Data Updated Sucessfully!!");
 };
