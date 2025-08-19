@@ -1,70 +1,104 @@
-import React, { useState, useRef, useEffect } from "react";
-import { SiEthereum } from "react-icons/si";
-import { IoChevronDown } from "react-icons/io5";
+import { useRef } from "react";
+import Select from "react-select";
+import { chainConfigs } from "../utils/constants";
 
-const NetworkSelector = () => {
-	const [isOpen, setIsOpen] = useState(false);
+const NetworkSelector = ({ selectedOption, handleChange }) => {
 	const dropdownRef = useRef(null);
 
-	const toggleDropdown = () => {
-		setIsOpen((prev) => !prev);
+	const customStyles = {
+		control: (base) => ({
+			...base,
+			border: "none",
+			boxShadow: "none",
+			backgroundColor: "transparent",
+			"&:hover": {
+				border: "none",
+			},
+			display: "flex",
+			alignItems: "center",
+			minHeight: "25px",
+			height: "25px",
+			borderRadius: "0.5rem",
+			width: "150px", // optional fixed width
+			padding: "0 0",
+		}),
+		valueContainer: (base) => ({
+			...base,
+			maringLeft: "0px", // ✅ same left/right as options
+			padding: "0 5px 2px 5px",
+			height: "25px",
+			display: "flex",
+			alignItems: "center",
+		}),
+		singleValue: (base) => ({
+			...base,
+			margin: 0, // ✅ remove react-select margin
+			color: "#111827",
+			fontSize: "0.875rem",
+			padding: "0 0",
+			lineHeight: "1rem",
+			display: "flex",
+			alignItems: "center",
+		}),
+		input: (base) => ({
+			...base,
+			margin: 0,
+			padding: 0,
+		}),
+		option: (base, state) => ({
+			...base,
+			fontSize: "0.875rem",
+			padding: "10px 10px", // ✅ match valueContainer left padding
+			backgroundColor: state.isFocused ? "#f3f4f6" : "white",
+			color: "#111827",
+			cursor: "pointer",
+			"&:active": {
+				backgroundColor: "#e5e7eb",
+			},
+		}),
+		menu: (base) => ({
+			...base,
+			borderRadius: "0.5rem",
+			marginTop: "0.5rem",
+			boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+			width: "170px",
+			position: "absolute",
+			left: -9, // ✅ match control
+		}),
+		menuList: (base) => ({
+			...base,
+			padding: 0, // ✅ remove default padding around options
+		}),
+		dropdownIndicator: (base) => ({
+			// dropdown wali arrow
+			...base,
+			color: "#6b7280",
+			"&:hover": { color: "#111827" },
+			padding: "0 0 2px 4px",
+			display: "flex",
+			alignItems: "center",
+		}),
+		indicatorSeparator: () => ({
+			display: "none",
+		}),
 	};
-
-	// Close dropdown when clicking outside
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-				setIsOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
 
 	return (
 		<div ref={dropdownRef} className="relative inline-block text-left">
 			{/* Selector */}
-			<div
-				className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
-				onClick={toggleDropdown}
-			>
-				{/* Icon Badge */}
-				<div className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600">
-					<SiEthereum className="w-3.5 h-3.5" />
-				</div>
-
-				{/* Network Name */}
-				<span className="text-gray-800 text-sm font-medium">
-					Ethereum Mainnet
-				</span>
-
-				{/* Arrow */}
-				<IoChevronDown
-					className={`w-4 h-4 text-gray-500 transition-transform ${
-						isOpen ? "rotate-180" : ""
-					}`}
+			<div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
+				<Select
+					value={selectedOption}
+					onChange={handleChange}
+					options={chainConfigs}
+					styles={customStyles}
+					className="text-sm"
+					isClearable={false}
+					isDisabled={false}
+					isSearchable={false}
+					placeholder="Select Chain"
 				/>
 			</div>
-
-			{/* Dropdown Menu */}
-			{isOpen && (
-				<div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black/5 z-10 overflow-hidden">
-					<div className="py-1">
-						{/* Placeholder for your options */}
-						<button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-							Option 1
-						</button>
-						<button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-							Option 2
-						</button>
-						<button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-							Option 3
-						</button>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 };
