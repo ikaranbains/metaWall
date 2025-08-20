@@ -7,10 +7,11 @@ import Menu from "./Menu";
 import Accounts from "./Accounts";
 import { useNetwork } from "../context/NetworkContext";
 import ActivityBar from "./ActivityBar";
-
+import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 
 const Home = () => {
+	const navigate = useNavigate();
 	const { walletAddress } = useWallet();
 	const { selectedOption, setSelectedOption, balance, setBalance } =
 		useNetwork();
@@ -20,8 +21,6 @@ const Home = () => {
 		toast.success("Chain changed to " + option?.label);
 		localStorage.setItem("chainId", option?.chainId);
 	};
-
-	
 
 	return (
 		<div className="w-full h-screen overflow-x-hidden">
@@ -47,13 +46,19 @@ const Home = () => {
 						<h2 className="text-[2.1vw]">{`${balance} ${selectedOption?.nativeCurrency?.symbol}`}</h2>
 						<div className="pt-7 flex items-center justify-center gap-10">
 							<div className="flex items-center justify-center flex-col">
-								<span className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300">
+								<span
+									onClick={() => navigate("/send")}
+									className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300"
+								>
 									<GoArrowUpRight />
 								</span>
 								Send
 							</div>
 							<div className="flex items-center justify-center flex-col">
-								<span className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300">
+								<span
+									onClick={() => navigate("/receive")}
+									className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300"
+								>
 									<MdOutlineQrCodeScanner />
 								</span>
 								Receive
