@@ -1,5 +1,4 @@
-import { use, useEffect, useState } from "react";
-import { getDataById } from "../utils/idb";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import NetworkSelector from "./NetworkSelector";
 import { GoArrowUpRight } from "react-icons/go";
@@ -8,75 +7,21 @@ import Menu from "./Menu";
 import Accounts from "./Accounts";
 import { useNetwork } from "../context/NetworkContext";
 import ActivityBar from "./ActivityBar";
-import Web3 from "web3";
-import { chainConfigs } from "../utils/constants";
+
 import { useWallet } from "../context/WalletContext";
-import useUser from "../hooks/useUser";
 
 const Home = () => {
 	const { walletAddress } = useWallet();
-	const { selectedOption, setSelectedOption } = useNetwork();
-	const [balance, setBalance] = useState("0");
-	const [web3Provider, setWeb3Provider] = useState(null);
+	const { selectedOption, setSelectedOption, balance, setBalance } =
+		useNetwork();
 
 	const handleChange = async (option) => {
 		setSelectedOption(option);
-		// const selected = {...option};
-		// const web3 = new Web3(selected?.rpc || chainConfigs[0]?.rpc);
 		toast.success("Chain changed to " + option?.label);
-		// const getChain = await web3.eth.getChainId();
-		// console.log(getChain);
+		localStorage.setItem("chainId", option?.chainId);
 	};
 
-	const getBalance = async () => {
-		try {
-			if (!web3Provider) return console.log("no provider found");
-
-			const balanceWei = await web3Provider.eth.getBalance(walletAddress);
-			const balanceEth = web3Provider.utils.fromWei(balanceWei, "ether");
-			const formattedBalance = parseFloat(balanceEth).toLocaleString(
-				undefined,
-				{
-					minimumFractionDigits: 0,
-					maximumFractionDigits: 6,
-				}
-			);
-			setBalance(formattedBalance);
-			localStorage.setItem("cachedBalance", formattedBalance);
-			console.log("✅ Balance Fetched Successfully");
-		} catch (error) {
-			console.log("❌ error balance - ", error);
-		}
-	};
-
-	useEffect(() => {
-		try {
-			const option = { ...selectedOption };
-			if (!option) console.log("No option found!!");
-
-			const provider = new Web3(option?.rpc || chainConfigs?.[0]?.rpc);
-
-			if (!provider) console.log("No Provider");
-
-			setWeb3Provider(provider);
-			console.log("Provider set successfully!!");
-		} catch (error) {
-			console.log("error getting provider!!", error);
-		}
-	}, [selectedOption]);
-
-	useEffect(() => {
-		try {
-			if (web3Provider && walletAddress) getBalance();
-		} catch (error) {
-			console.log("error", error);
-		}
-	}, [selectedOption, web3Provider, walletAddress]);
-
-	useEffect(() => {
-		const cached = localStorage.getItem("cachedBalance");
-		if (cached) setBalance(cached);
-	}, []);
+	
 
 	return (
 		<div className="w-full h-screen overflow-x-hidden">

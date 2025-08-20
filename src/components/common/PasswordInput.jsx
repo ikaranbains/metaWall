@@ -7,6 +7,7 @@ const PasswordInput = ({
 	placeholder = "",
 	onChange = () => {},
 	value,
+	divClass,
 	className,
 	error = {},
 	...props
@@ -14,12 +15,12 @@ const PasswordInput = ({
 	const [showPassword, setShowPassword] = useState(false);
 
 	return (
-		<div className="flex flex-col ">
+		<div className="flex flex-col">
 			<Label htmlFor={name} content="Password" required={true} />
 			<div
 				className={`w-[20vw]  ${
 					error["password"] ? "border-red-500" : "border-zinc-400"
-				} border outline-none rounded flex items-center mt-2`}
+				} border outline-none rounded flex items-center mt-2 ${divClass}`}
 			>
 				<input
 					name={name}

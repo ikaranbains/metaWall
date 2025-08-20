@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bcrypt from "bcryptjs";
-import Label from "../common/Label";
 import { getDataByEmail } from "../../utils/idb";
 import toast from "react-hot-toast";
 import { loginValidation } from "../../utils/validation";
@@ -18,6 +17,8 @@ import AuthCard from "../common/AuthCard";
 import StepButtons from "../common/StepButtons";
 import AuthForm from "../common/AuthForm";
 import StepWrapper from "../common/StepWrapper";
+import Cookies from "js-cookie";
+import RecoveryModal from "../RecoveryModal";
 
 const Login = () => {
 	const [loginDetails, setloginDetails] = useState({
@@ -30,6 +31,8 @@ const Login = () => {
 	const [currentStep, setcurrentStep] = useState(1);
 	const [progressWidth, setprogressWidth] = useState(0);
 	const [loginErrors, setloginErrors] = useState({});
+	const [userFound, setuserFound] = useState(false);
+	const [showRecoveryPopup, setShowRecoveryPopup] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -56,7 +59,10 @@ const Login = () => {
 		const user = await getDataByEmail(email);
 		// console.log(user);
 		if (!user) {
+			setuserFound(false);
 			return showUserNotFoundError();
+		} else {
+			setuserFound(true);
 		}
 
 		const isMatch = await bcrypt.compare(password, user?.password);
@@ -102,6 +108,7 @@ const Login = () => {
 
 		const token = crypto.randomUUID();
 		localStorage.setItem("metaWallToken", token);
+		Cookies.set("metaWallToken", token);
 
 		// console.log("user-------------", user);
 		localStorage.setItem("loggedUserId", userData.id);
@@ -132,54 +139,69 @@ const Login = () => {
 	};
 
 	return (
-		<AuthCard>
-			<Steps currentStep={currentStep} progressWidth={progressWidth} />
+		<>
+			{showRecoveryPopup && (
+				<div className="absolute w-full h-full backdrop-blur-md z-[999]">
+					<RecoveryModal onClose={() => setShowRecoveryPopup(false)} />
+				</div>
+			)}
+			<AuthCard>
+				<Steps currentStep={currentStep} progressWidth={progressWidth} />
 
-			<div className="flex gap-5 items-center w-[75%] justify-center">
-				<StepWrapper active={currentStep === 1} step={1}>
-					<AuthForm onSubmit={(e) => handleSubmit(e)} title="Login">
-						<Input
-							name="email"
-							label="Email"
-							required={true}
-							type="email"
-							placeholder="Enter Your Email..."
-							onChange={(e) => handleChange(e)}
-							value={loginDetails?.email}
-							error={loginErrors}
-						/>
-						<PasswordInput
-							name="password"
-							placeholder="Enter Your Password..."
-							onChange={(e) => handleChange(e)}
-							value={loginDetails?.password}
-							error={loginErrors}
-						/>
-					</AuthForm>
-				</StepWrapper>
-
-				<StepWrapper active={currentStep === 2} step={2}>
-					<h2 className="text-xl text-center font-medium mt-5">
-						Enter Secret Recovery Phrase for Authentication
-					</h2>
-					{currentStep === 2 && (
-						<>
-							<RecoveryPhraseGrid
-								phraseInputs={recoveryPhrase}
-								onChange={secretChangeHandler}
+				<div className="flex gap-5 items-center w-[75%] justify-center">
+					<StepWrapper active={currentStep === 1} step={1}>
+						<AuthForm onSubmit={(e) => handleSubmit(e)} title="Login">
+							<Input
+								name="email"
+								label="Email"
+								required={true}
+								type="email"
+								placeholder="Enter Your Email..."
+								onChange={(e) => handleChange(e)}
+								value={loginDetails?.email}
+								error={loginErrors}
 							/>
-						</>
-					)}
-				</StepWrapper>
-			</div>
+							<PasswordInput
+								name="password"
+								placeholder="Enter Your Password..."
+								onChange={(e) => handleChange(e)}
+								value={loginDetails?.password}
+								error={loginErrors}
+							/>
+						</AuthForm>
+						{!userFound && (
+							<div
+								onClick={() => setShowRecoveryPopup(true)}
+								className="text-sm hover:underline hover:text-blue-500 cursor-pointer"
+							>
+								Recover Wallet
+							</div>
+						)}
+					</StepWrapper>
 
-			<StepButtons
-				currentStep={currentStep}
-				btnLabel="Login"
-				onBack={onBack}
-				onNext={(e) => nextHandler(e)}
-			/>
-		</AuthCard>
+					<StepWrapper active={currentStep === 2} step={2}>
+						<h2 className="text-xl text-center font-medium mt-5">
+							Enter Secret Recovery Phrase for Authentication
+						</h2>
+						{currentStep === 2 && (
+							<>
+								<RecoveryPhraseGrid
+									phraseInputs={recoveryPhrase}
+									onChange={secretChangeHandler}
+								/>
+							</>
+						)}
+					</StepWrapper>
+				</div>
+
+				<StepButtons
+					currentStep={currentStep}
+					btnLabel="Login"
+					onBack={onBack}
+					onNext={(e) => nextHandler(e)}
+				/>
+			</AuthCard>
+		</>
 	);
 };
 

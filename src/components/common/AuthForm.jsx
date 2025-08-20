@@ -1,6 +1,6 @@
 import React from "react";
 
-const AuthForm = ({ children, onSubmit, title }) => {
+const AuthForm = ({ children, onSubmit = () => {}, title }) => {
 	return (
 		<>
 			<h2 className="font-medium text-xl pt-4">{title}</h2>

@@ -19,6 +19,7 @@ import StepButtons from "../common/StepButtons";
 import AuthForm from "../common/AuthForm";
 import StepWrapper from "../common/StepWrapper";
 import Cookies from "js-cookie";
+import { chainConfigs } from "../../utils/constants";
 window.Buffer = Buffer;
 
 export const generateMnemonic = () => {
@@ -92,8 +93,8 @@ const Register = () => {
 		const web3 = new Web3(selectedOption?.rpc || chainConfigs[0]?.rpc);
 		const account = web3.eth.accounts.create();
 		setWallet(account);
-		Cookies.set("walletAddress", account?.address);
 		localStorage.setItem("walletAddress", account?.address);
+		Cookies.set("walletAddress", account?.address);
 
 		const pass = await hashPassword(userDetails?.password);
 
@@ -103,9 +104,10 @@ const Register = () => {
 			recoveryPhrase: recoveryPhrase,
 			userWallet: [
 				{ account: account.address, privateKey: account.privateKey },
-			],
+			],	
 		});
 		localStorage.setItem(`firstLogin_${userDetails?.email}`, "true");
+		localStorage.setItem("chainId", chainConfigs[0]?.chainId);
 		setuserDetails({
 			id: "",
 			firstname: "",

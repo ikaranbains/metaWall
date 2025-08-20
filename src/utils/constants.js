@@ -6,6 +6,7 @@ export const chainConfigs = [
 		chainId: 11155111,
 		network: "sepolia",
 		rpc: "https://ethereum-sepolia-rpc.publicnode.com",
+		// wss: "wss://ethereum-sepolia-rpc.publicnode.com",
 		blockExplorerUrls: ["https://sepolia.etherscan.io"],
 		nativeCurrency: {
 			name: "ETH",
@@ -20,6 +21,7 @@ export const chainConfigs = [
 		chainId: 80002,
 		network: "polygon",
 		rpc: "https://polygon-amoy-bor-rpc.publicnode.com",
+		// wss: "wss://polygon-amoy-bor-rpc.publicnode.com",
 		blockExplorerUrls: ["https://oklink.com/amoy"],
 		nativeCurrency: {
 			name: "MATIC",

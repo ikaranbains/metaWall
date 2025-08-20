@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDataById } from "../utils/idb";
 
-export default useUser = () => {
+const useUser = () => {
 	const [userData, setUserData] = useState(null);
 	useEffect(() => {
 		const id = localStorage.getItem("loggedUserId");
@@ -15,3 +15,5 @@ export default useUser = () => {
 
 	return { userData };
 };
+
+export default useUser;
