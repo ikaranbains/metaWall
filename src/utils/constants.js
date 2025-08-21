@@ -5,8 +5,8 @@ export const chainConfigs = [
 		name: "Sepolia",
 		chainId: 11155111,
 		network: "sepolia",
-		rpc: "https://ethereum-sepolia-rpc.publicnode.com",
-		wss: "wss://ethereum-sepolia-rpc.publicnode.com",
+		rpc: "https://eth-sepolia.g.alchemy.com/v2/kjHIh07O7c7Od-1LLJ9Pv",
+		wss: "wss://eth-sepolia.g.alchemy.com/v2/kjHIh07O7c7Od-1LLJ9Pv",
 		blockExplorerUrls: ["https://sepolia.etherscan.io"],
 		nativeCurrency: {
 			name: "ETH",
@@ -20,8 +20,8 @@ export const chainConfigs = [
 		name: "Polygon",
 		chainId: 80002,
 		network: "polygon",
-		rpc: "https://polygon-amoy-bor-rpc.publicnode.com",
-		wss: "wss://polygon-amoy-bor-rpc.publicnode.com",
+		rpc: "https://polygon-amoy.g.alchemy.com/v2/kjHIh07O7c7Od-1LLJ9Pv",
+		wss: "wss://polygon-amoy.g.alchemy.com/v2/kjHIh07O7c7Od-1LLJ9Pv",
 		blockExplorerUrls: ["https://oklink.com/amoy"],
 		nativeCurrency: {
 			name: "MATIC",

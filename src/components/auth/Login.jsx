@@ -101,9 +101,7 @@ const Login = () => {
 		});
 	};
 
-	const handleFinalLogin = async () => {
-		if (!userData) return;
-
+	const handleFinalLogin = async (user) => {
 		setloginDetails({ email: "", password: "" });
 
 		const token = crypto.randomUUID();
@@ -111,7 +109,7 @@ const Login = () => {
 		Cookies.set("metaWallToken", token);
 
 		// console.log("user-------------", user);
-		localStorage.setItem("loggedUserId", userData.id);
+		localStorage.setItem("loggedUserId", user.id);
 
 		// Mark first login as completed
 		localStorage.setItem(`firstLogin_${loginDetails?.email}`, "false");

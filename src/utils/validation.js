@@ -1,3 +1,5 @@
+import { getAddress } from "ethers";
+
 export const registerValidation = (values) => {
 	let errors = {};
 	let emailRegex = /^\S+@\S+\.\S+$/;
@@ -44,3 +46,22 @@ export const loginValidation = (values) => {
 
 	return errors;
 };
+
+export function isValidWalletAddress(address) {
+	if (typeof address !== "string") return false;
+
+	// Quick regex sanity check
+	const basicRegex = /^0x[a-fA-F0-9]{40}$/;
+	if (!basicRegex.test(address)) return false;
+
+	try {
+		// ethers v6 getAddress will checksum & validate
+		const checksumAddress = getAddress(address);
+		return (
+			checksumAddress === address ||
+			checksumAddress.toLowerCase() === address.toLowerCase()
+		);
+	} catch {
+		return false;
+	}
+}

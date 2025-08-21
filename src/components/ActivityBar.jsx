@@ -34,7 +34,7 @@ const ActivityBar = () => {
 				<div className="relative flex w-full">
 					{/* Sliding underline */}
 					<div
-						className={`absolute bottom-0 h-0.5 bg-black transition-transform duration-300 ease-in-out`}
+						className={`absolute bottom-0 h-0.5 bg-black transition-transform duration-100 ease-in-out`}
 						style={{
 							width: "50%", // since you have 2 tabs
 							transform:
@@ -78,7 +78,7 @@ const ActivityBar = () => {
 				>
 					<p className="mt-10 text-gray-400 text-sm">No tokens yet</p>
 				</div>
-				<div className={`w-full ${panelSelected === 2 ? "block" : "hidden"} `}>
+				<div className={`w-full ${panelSelected === 2 ? "block" : "hidden"} h-[45vh] overflow-y-scroll my-scroll`}>
 					<div className="flex flex-col gap-3">
 						{Object.entries(
 							transactions.reduce((acc, tx) => {
@@ -93,7 +93,7 @@ const ActivityBar = () => {
 								acc[dateKey].push(tx);
 								return acc;
 							}, {})
-						).map(([date, txs]) => (
+						).map(([date, txs]) => ( 
 							<div key={date} className="w-full 	">
 								<h2 className="text-md font-bold text-gray-700 mt-3 mb-2">
 									{date}

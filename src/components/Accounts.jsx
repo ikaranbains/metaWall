@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"
+import DeterministicPieIcon from "./common/DeterministicPieIcon";
 
 const Accounts = ({ address }) => {
 	const [copy, setCopy] = useState(false);
@@ -18,68 +19,6 @@ const Accounts = ({ address }) => {
 			.catch((err) => console.log("error", err));
 		setTimeout(() => setCopy(false), 2000);
 	};
-
-	function stringToNumberSeed(str) {
-		let hash = 0;
-		for (let i = 0; i < str.length; i++) {
-			hash = (hash << 5) - hash + str.charCodeAt(i);
-			hash |= 0;
-		}
-		return Math.abs(hash);
-	}
-
-	const DeterministicPieIcon = ({ address, size = 40 }) => {
-		const seed = stringToNumberSeed(address || "seed"); // fallback if empty
-		const slices = (seed % 4) + 2;
-		let remaining = 100;
-		let percents = [];
-
-		for (let i = 0; i < slices; i++) {
-			if (i === slices - 1) percents.push(remaining);
-			else {
-				const rnd =
-					Math.abs(
-						Math.floor(Math.sin(seed + i) * 10000) % (remaining - (slices - i))
-					) + 1;
-				percents.push(rnd);
-				remaining -= rnd;
-			}
-		}
-
-		let cumulative = 0;
-		const paths = percents.map((percent, i) => {
-			const [sx, sy] = getCoordinatesForPercent(cumulative / 100);
-			cumulative += percent;
-			const [ex, ey] = getCoordinatesForPercent(cumulative / 100);
-			const largeArc = percent > 50 ? 1 : 0;
-			const path = `M 50 50 L ${sx} ${sy} A 50 50 0 ${largeArc} 1 ${ex} ${ey} Z`;
-
-			return {
-				d: path,
-				color: `hsl(${(seed * (i + 1) * 47) % 360}, 70%, 60%)`,
-			};
-		});
-
-		return (
-			<svg width={size} height={size} viewBox="0 0 100 100">
-				{paths.map((slice, i) => (
-					<path
-						key={i}
-						d={slice.d}
-						fill={slice.color}
-						stroke="white"
-						strokeWidth="0.5"
-					/>
-				))}
-			</svg>
-		);
-	};
-
-	function getCoordinatesForPercent(percent) {
-		const x = 50 + 50 * Math.cos(2 * Math.PI * percent - Math.PI / 2);
-		const y = 50 + 50 * Math.sin(2 * Math.PI * percent - Math.PI / 2);
-		return [x, y];
-	}
 
 	return (
 		<div className="flex items-center flex-col gap-2 justify-center mr-45">

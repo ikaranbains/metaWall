@@ -4,11 +4,13 @@ import { LuSettings, LuSquareArrowOutUpRight } from "react-icons/lu";
 import { MdOutlineQrCodeScanner } from "react-icons/md";
 import { IoIosMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
+import { useWallet } from "../context/WalletContext";
 
 const Menu = () => {
 	const [menu, setMenu] = useState(false);
 	const menuRef = useRef(null);
 	const { selectedOption } = useNetwork();
+	const { walletAddress } = useWallet();
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -51,7 +53,7 @@ const Menu = () => {
 						<li className="flex items-center justify-center py-3 gap-4 hover:bg-zinc-100 border-b border-zinc-200 cursor-pointer">
 							{" "}
 							<a
-								href={selectedOption?.blockExplorerUrls[0]}
+								href={`${selectedOption?.blockExplorerUrls[0]}/address/${walletAddress}`}
 								target="_blank"
 								className="w-[85%] flex items-center gap-4"
 							>

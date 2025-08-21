@@ -5,13 +5,16 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { WalletContext } from "./context/WalletContext.jsx";
 import { NetworkContext } from "./context/NetworkContext.jsx";
+import { TxContext } from "./context/TxContext.jsx";
 
 createRoot(document.getElementById("root")).render(
 	<NetworkContext>
-			<WalletContext>
+		<WalletContext>
+			<TxContext>
 				<BrowserRouter>
 					<App />
 				</BrowserRouter>
-			</WalletContext>
+			</TxContext>
+		</WalletContext>
 	</NetworkContext>
 );

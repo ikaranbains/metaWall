@@ -5,12 +5,12 @@ import Home from "./components/Home";
 import { Toaster } from "react-hot-toast";
 import HomeWrapper from "./components/wrappers/HomeWrapper";
 import Send from "./components/Send";
-import Receive from "./components/Receive";
 import NotFoundPage from "./components/NotFoundPage";
+import ReviewTx from "./components/ReviewTx";
 
 const App = () => {
 	return (
-		<div className="h-screen w-screen">
+		<div className="h-screen w-screen overflow-x-hidden">
 			<Toaster />
 			<Routes>
 				<Route path="/" element={<Register />} />
@@ -24,7 +24,7 @@ const App = () => {
 					}
 				/>
 				<Route path="/send" element={<Send />} />
-				<Route path="/receive" element={<Receive />} />
+				<Route path="/review" element={<ReviewTx />} />
 				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
 		</div>

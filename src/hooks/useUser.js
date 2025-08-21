@@ -3,8 +3,9 @@ import { getDataById } from "../utils/idb";
 
 const useUser = () => {
 	const [userData, setUserData] = useState(null);
+	const id = localStorage.getItem("loggedUserId");
+	if (!id) return { error: "id not found" };
 	useEffect(() => {
-		const id = localStorage.getItem("loggedUserId");
 		const getUser = async (id) => {
 			const user = await getDataById(id);
 			setUserData(user);

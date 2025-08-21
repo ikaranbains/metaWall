@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import NetworkSelector from "./NetworkSelector";
 import { GoArrowUpRight } from "react-icons/go";
@@ -9,12 +9,13 @@ import { useNetwork } from "../context/NetworkContext";
 import ActivityBar from "./ActivityBar";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
+import ReceiveModal from "./modals/ReceiveModal";
 
 const Home = () => {
 	const navigate = useNavigate();
 	const { walletAddress } = useWallet();
-	const { selectedOption, setSelectedOption, balance, setBalance } =
-		useNetwork();
+	const { selectedOption, setSelectedOption, balance } = useNetwork();
+	const [showReceiveModal, setShowReceiveModal] = useState(true);
 
 	const handleChange = async (option) => {
 		setSelectedOption(option);
@@ -23,14 +24,17 @@ const Home = () => {
 	};
 
 	return (
-		<div className="w-full h-screen overflow-x-hidden">
-			<div className="w-full h-screen bg-[#f3f5f9] absolute"></div>
+		<div className="min-h-screen relative overflow-x-hidden">
+			{showReceiveModal && (
+				<ReceiveModal walletAddress={walletAddress} onClose={() => setShowReceiveModal(false)} />
+			)}
+			<div className="w-full h-full bg-[#f3f5f9] absolute"></div>
 			<div className="absolute w-full z-[99]">
 				<h2 className="font-bold text-xl text-center mt-10 leading-none">
 					meta
 				</h2>
 				<h2 className="font-bold text-3xl text-center leading-none">Wall</h2>
-				<div className="shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white mt-8 w-[65%] m-auto min-h-[87vh] flex items-center flex-col">
+				<div className="shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white mt-6 w-[65%] m-auto min-h-[85vh] flex items-center flex-col">
 					<div className="w-full h-20 flex items-center justify-between px-10 border-b border-zinc-200">
 						<div>
 							<NetworkSelector
@@ -56,7 +60,7 @@ const Home = () => {
 							</div>
 							<div className="flex items-center justify-center flex-col">
 								<span
-									onClick={() => navigate("/receive")}
+									onClick={() => setShowReceiveModal(true)}
 									className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300"
 								>
 									<MdOutlineQrCodeScanner />
