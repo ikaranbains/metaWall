@@ -3,6 +3,17 @@
 
 * {
 	font-family: "Funnel Display", sans-serif;
+	scrollbar-width: thin; /* thin scrollbar */
+	scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+*::selection {
+	background: #000;
+	color: #fff;
+}
+
+html {
+	scroll-behavior: smooth;
 }
 
 input::-webkit-outer-spin-button,
@@ -17,11 +28,21 @@ input[type="number"] {
 }
 
 .my-scroll {
-  overflow: scroll; /* or auto */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
+	overflow: scroll; /* or auto */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
 }
 
 .my-scroll::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+	display: none; /* Chrome, Safari and Opera */
+}
+
+.modal-content::-webkit-scrollbar {
+	width: 6px;
+}
+.modal-content::-webkit-scrollbar-button {
+	display: none;
+}
+.modal-content {
+	scrollbar-width: thin;
 }

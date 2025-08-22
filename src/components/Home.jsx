@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import NetworkSelector from "./NetworkSelector";
 import { GoArrowUpRight } from "react-icons/go";
@@ -11,18 +11,41 @@ import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 import ReceiveModal from "./modals/ReceiveModal";
 import HomeButton from "./buttons/HomeButton";
+import ImportTokensModal from "./modals/ImportTokensModal";
+import Web3 from "web3";
 
 const Home = () => {
 	const navigate = useNavigate();
 	const { walletAddress } = useWallet();
 	const { selectedOption, setSelectedOption, balance } = useNetwork();
 	const [showReceiveModal, setShowReceiveModal] = useState(false);
+	const [showImportModal, setShowImportModal] = useState(false);
+	const [tokenAddress, setTokenAddress] = useState("");
+	const [disabled, setDisabled] = useState(true);
+	const [showTokenDetails, setShowTokenDetails] = useState(false);
+	const web3 = new Web3(selectedOption?.rpc);
 
 	const handleChange = async (option) => {
 		setSelectedOption(option);
 		toast.success("Chain changed to " + option?.label);
 		localStorage.setItem("chainId", option?.chainId);
 	};
+
+	const handleTokenAddressChange = (e) => {
+		setTokenAddress(e.target.value);
+		setDisabled(false);
+	};
+
+	const getTokenDetails = () => {
+
+	};
+
+	useEffect(() => {
+		if (tokenAddress === "") {
+			setDisabled(true);
+			setShowTokenDetails(false);
+		}
+	}, [tokenAddress]);
 
 	return (
 		<div className="min-h-screen relative overflow-x-hidden">
@@ -31,6 +54,18 @@ const Home = () => {
 					walletAddress={walletAddress}
 					isOpen={showReceiveModal}
 					onClose={() => setShowReceiveModal(false)}
+				/>
+			)}
+			{showImportModal && (
+				<ImportTokensModal
+					isOpen={showImportModal}
+					onClose={() => setShowImportModal(false)}
+					selectedOption={selectedOption}
+					tokenAddress={tokenAddress}
+					onChange={(e) => handleTokenAddressChange(e)}
+					disabled={disabled}
+					showTokenDetails={showTokenDetails}
+					setShowTokenDetails={setShowTokenDetails}
 				/>
 			)}
 			<div className="w-full h-full bg-[#f3f5f9] absolute"></div>
@@ -68,7 +103,7 @@ const Home = () => {
 						</div>
 					</div>
 
-					<ActivityBar />
+					<ActivityBar setShowImportModal={setShowImportModal} />
 				</div>
 			</div>
 		</div>

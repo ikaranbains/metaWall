@@ -76,18 +76,7 @@ const ReviewTx = () => {
 				setGasLimit(fee.gas);
 				setGasPrice(fee.gasPrice);
 				setNetworkFee(fee.totalFeeEther);
-
-				// if (Number(chainId) === 11155111) {
-				// 	// ✅ Ethereum / Sepolia
-				// 	setGasPrice(fee.gasPrice);
-				// 	setmaxFeePerGas(null);
-				// 	setmaxPriorityFeePerGas(null);
-				// } else if (Number(chainId) === 80002 || Number(chainId) === 137) {
-				// 	// ✅ Polygon chains
-				// 	setmaxFeePerGas(fee.maxFeePerGas);
-				// 	setmaxPriorityFeePerGas(fee.maxPriorityFeePerGas);
-				// 	setGasPrice(null); // don't use legacy gasPrice here
-				// }
+				
 			} catch (err) {
 				console.error("Error fetching network fee:", err);
 			}
