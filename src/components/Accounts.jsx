@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
-import toast from "react-hot-toast"
+import toast from "react-hot-toast";
 import DeterministicPieIcon from "./common/DeterministicPieIcon";
+import Address from "./common/Address";
 
 const Accounts = ({ address }) => {
 	const [copy, setCopy] = useState(false);
@@ -32,9 +33,7 @@ const Accounts = ({ address }) => {
 				</span>
 			</div>
 			<h2 className="flex items-center justify-center gap-2 text-zinc-500 text-sm">
-				{address
-					? `${address.slice(0, 6)}...${address.slice(-7)}`
-					: "not found"}
+				<Address address={address} />
 				<span onClick={copyHandler} className="cursor-pointer">
 					{copy ? <LuCopyCheck size={17} /> : <LuCopy size={17} />}
 				</span>

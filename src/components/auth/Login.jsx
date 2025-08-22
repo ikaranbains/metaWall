@@ -14,7 +14,7 @@ import Input from "../common/Input";
 import PasswordInput from "../common/PasswordInput";
 import Steps from "../common/Steps";
 import AuthCard from "../common/AuthCard";
-import StepButtons from "../common/StepButtons";
+import StepButtons from "../buttons/StepButtons";
 import AuthForm from "../common/AuthForm";
 import StepWrapper from "../common/StepWrapper";
 import Cookies from "js-cookie";

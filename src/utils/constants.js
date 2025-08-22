@@ -20,8 +20,8 @@ export const chainConfigs = [
 		name: "Polygon",
 		chainId: 80002,
 		network: "polygon",
-		rpc: "https://polygon-amoy.g.alchemy.com/v2/kjHIh07O7c7Od-1LLJ9Pv",
-		wss: "wss://polygon-amoy.g.alchemy.com/v2/kjHIh07O7c7Od-1LLJ9Pv",
+		rpc: "https://polygon-amoy.infura.io/v3/4213210e52fd4c4bba5138978d5966cf",
+		wss: "wss://polygon-amoy.infura.io/ws/v3/4213210e52fd4c4bba5138978d5966cf",
 		blockExplorerUrls: ["https://oklink.com/amoy"],
 		nativeCurrency: {
 			name: "MATIC",

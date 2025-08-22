@@ -1,5 +1,5 @@
 import React from "react";
-import ShineBtn from "./ShineBtn";
+import ShineBtn from "../common/ShineBtn";
 
 const StepButtons = ({ currentStep, btnLabel, onBack, onNext }) => {
 	return (

@@ -10,12 +10,13 @@ import ActivityBar from "./ActivityBar";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 import ReceiveModal from "./modals/ReceiveModal";
+import HomeButton from "./buttons/HomeButton";
 
 const Home = () => {
 	const navigate = useNavigate();
 	const { walletAddress } = useWallet();
 	const { selectedOption, setSelectedOption, balance } = useNetwork();
-	const [showReceiveModal, setShowReceiveModal] = useState(true);
+	const [showReceiveModal, setShowReceiveModal] = useState(false);
 
 	const handleChange = async (option) => {
 		setSelectedOption(option);
@@ -26,7 +27,11 @@ const Home = () => {
 	return (
 		<div className="min-h-screen relative overflow-x-hidden">
 			{showReceiveModal && (
-				<ReceiveModal walletAddress={walletAddress} onClose={() => setShowReceiveModal(false)} />
+				<ReceiveModal
+					walletAddress={walletAddress}
+					isOpen={showReceiveModal}
+					onClose={() => setShowReceiveModal(false)}
+				/>
 			)}
 			<div className="w-full h-full bg-[#f3f5f9] absolute"></div>
 			<div className="absolute w-full z-[99]">
@@ -34,7 +39,7 @@ const Home = () => {
 					meta
 				</h2>
 				<h2 className="font-bold text-3xl text-center leading-none">Wall</h2>
-				<div className="shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white mt-6 w-[65%] m-auto min-h-[85vh] flex items-center flex-col">
+				<div className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-300 bg-white mt-6 w-[65%] m-auto min-h-[85vh] flex items-center flex-col">
 					<div className="w-full h-20 flex items-center justify-between px-10 border-b border-zinc-200">
 						<div>
 							<NetworkSelector
@@ -49,24 +54,17 @@ const Home = () => {
 					<div className="w-full h-60 flex flex-col items-center pt-10">
 						<h2 className="text-[2.1vw]">{`${balance} ${selectedOption?.nativeCurrency?.symbol}`}</h2>
 						<div className="pt-7 flex items-center justify-center gap-10">
-							<div className="flex items-center justify-center flex-col">
-								<span
-									onClick={() => navigate("/send")}
-									className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300"
-								>
-									<GoArrowUpRight />
-								</span>
-								Send
-							</div>
-							<div className="flex items-center justify-center flex-col">
-								<span
-									onClick={() => setShowReceiveModal(true)}
-									className="w-10 h-10 inline-flex rounded-full items-center justify-center bg-zinc-200 cursor-pointer hover:bg-zinc-300"
-								>
-									<MdOutlineQrCodeScanner />
-								</span>
-								Receive
-							</div>
+							<HomeButton
+								onClick={() => navigate("/send")}
+								icon={<GoArrowUpRight />}
+								title="Send"
+							/>
+
+							<HomeButton
+								onClick={() => setShowReceiveModal(true)}
+								icon={<MdOutlineQrCodeScanner />}
+								title="Receive"
+							/>
 						</div>
 					</div>
 
