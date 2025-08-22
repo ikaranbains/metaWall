@@ -41,11 +41,8 @@ const ReviewTx = () => {
 				amt: amtInput,
 				gasLimit,
 				gasPrice,
-				maxFeePerGas,
-				maxPriorityFeePerGas,
 				nonce,
 				privateKey,
-				chainId,
 			});
 
 			console.log("Tx receipt -------- ", receipt);
@@ -74,23 +71,23 @@ const ReviewTx = () => {
 					from: walletAddress,
 					to: addressInput,
 					amt: amtInput,
-					chainId,
 				});
 
-				setGasLimit(fee.gasLimit);
+				setGasLimit(fee.gas);
+				setGasPrice(fee.gasPrice);
 				setNetworkFee(fee.totalFeeEther);
 
-				if (Number(chainId) === 11155111) {
-					// ✅ Ethereum / Sepolia
-					setGasPrice(fee.gasPrice);
-					setmaxFeePerGas(null);
-					setmaxPriorityFeePerGas(null);
-				} else if (Number(chainId) === 80002 || Number(chainId) === 137) {
-					// ✅ Polygon chains
-					setmaxFeePerGas(fee.maxFeePerGas);
-					setmaxPriorityFeePerGas(fee.maxPriorityFeePerGas);
-					setGasPrice(null); // don't use legacy gasPrice here
-				}
+				// if (Number(chainId) === 11155111) {
+				// 	// ✅ Ethereum / Sepolia
+				// 	setGasPrice(fee.gasPrice);
+				// 	setmaxFeePerGas(null);
+				// 	setmaxPriorityFeePerGas(null);
+				// } else if (Number(chainId) === 80002 || Number(chainId) === 137) {
+				// 	// ✅ Polygon chains
+				// 	setmaxFeePerGas(fee.maxFeePerGas);
+				// 	setmaxPriorityFeePerGas(fee.maxPriorityFeePerGas);
+				// 	setGasPrice(null); // don't use legacy gasPrice here
+				// }
 			} catch (err) {
 				console.error("Error fetching network fee:", err);
 			}

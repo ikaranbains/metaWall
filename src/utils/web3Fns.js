@@ -1,52 +1,32 @@
-export const calculateGasFee = async ({ web3, from, to, amt, chainId }) => {
-  if (!web3) throw new Error("No web3 provider");
-  try {
-    const value = web3.utils.toWei(amt?.toString() || "0", "ether");
+export const calculateGasFee = async ({ web3, from, to, amt }) => {
+	if (!web3) throw new Error("No web3 provider");
+	try {
+		const value = web3.utils.toWei(amt?.toString() || "0", "ether");
 
-    const [gasPrice, gasLimit, block] = await Promise.all([
-      web3.eth.getGasPrice(),
-      web3.eth.estimateGas({ from, to, value }),
-      web3.eth.getBlock("latest"),
-    ]);
+		const [gasPrice, gasLimit, block] = await Promise.all([
+			web3.eth.getGasPrice(),
+			web3.eth.estimateGas({ from, to, value }),
+			web3.eth.getBlock("latest"),
+		]);
 
-    if (Number(chainId) === 11155111) { // Sepolia
-      const totalFeeWei = BigInt(gasLimit) * BigInt(gasPrice);
-      const totalFeeEther = web3.utils.fromWei(totalFeeWei.toString(), "ether");
+		const baseFee = block.baseFeePerGas;
 
-      return { gasPrice, gasLimit, totalFeeEther };
-    }
+		const tip = web3.utils.toWei("2", "gwei");
 
-    // Polygon Amoy (80002) / Mainnet (137)
-    const baseFee = block.baseFeePerGas;
-    let tip;
+		let maxFeePerGas =
+			baseFee > 0n ? BigInt(baseFee) + BigInt(tip) : BigInt(gasPrice);
 
-    if (Number(chainId) === 80002 || Number(chainId) === 137) {
-      // Set tip to at least 30 gwei instead of 2
-      tip = web3.utils.toWei("30", "gwei");
-    } else {
-      tip = web3.utils.toWei("2", "gwei");
-    }
+		const totalFeeWei = BigInt(gasLimit) * maxFeePerGas;
+		const totalFeeEther = web3.utils.fromWei(totalFeeWei.toString(), "ether");
 
-    let maxFeePerGas = BigInt(baseFee) + BigInt(tip);
-
-    // Enforce Polygon min gas 30 gwei
-    const minGasPrice = BigInt(web3.utils.toWei("30", "gwei"));
-    if (maxFeePerGas < minGasPrice) {
-      maxFeePerGas = minGasPrice;
-    }
-
-    const totalFeeWei = BigInt(gasLimit) * maxFeePerGas;
-    const totalFeeEther = web3.utils.fromWei(totalFeeWei.toString(), "ether");
-
-    return {
-      gasLimit,
-      maxPriorityFeePerGas: tip,
-      maxFeePerGas: maxFeePerGas.toString(),
-      totalFeeEther,
-    };
-  } catch (error) {
-    throw error;
-  }
+		return {
+			gas: Number(gasLimit) * 2,
+			gasPrice: (Number(gasPrice) * 2).toString(),
+			totalFeeEther,
+		};
+	} catch (error) {
+		throw error;
+	}
 };
 
 export const sendTx = async ({
@@ -55,12 +35,9 @@ export const sendTx = async ({
 	to,
 	amt,
 	gasLimit,
-	gasPrice, // for ETH chains
-	maxFeePerGas, // for Polygon
-	maxPriorityFeePerGas, // for Polygon
+	gasPrice,
 	nonce,
 	privateKey,
-	chainId,
 }) => {
 	try {
 		if (!web3) throw new Error("No web3 provider");
@@ -78,18 +55,9 @@ export const sendTx = async ({
 			to,
 			value,
 			gas: gasLimit,
+			gasPrice,
 			nonce,
-			chainId,
 		};
-
-		if (Number(chainId) === 80002) {
-			// Polygon family EIP‑1559
-			tx.maxFeePerGas = maxFeePerGas;
-			tx.maxPriorityFeePerGas = maxPriorityFeePerGas;
-		} else {
-			// Ethereum/Sepolia
-			tx.gasPrice = gasPrice;
-		}
 
 		console.log("tx built ----------------", tx);
 
