@@ -7,6 +7,7 @@ import HomeWrapper from "./components/wrappers/HomeWrapper";
 import Send from "./components/Send";
 import NotFoundPage from "./components/NotFoundPage";
 import ReviewTx from "./components/ReviewTx";
+import AccountsPage from "./components/AccountsPage";
 
 const App = () => {
 	return (
@@ -25,6 +26,7 @@ const App = () => {
 				/>
 				<Route path="/send" element={<Send />} />
 				<Route path="/review" element={<ReviewTx />} />
+				<Route path="/account-details" element={<AccountsPage />} />
 				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
 		</div>

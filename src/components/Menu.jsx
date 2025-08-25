@@ -5,12 +5,14 @@ import { MdOutlineQrCodeScanner } from "react-icons/md";
 import { IoIosMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { useWallet } from "../context/WalletContext";
+import { useNavigate } from "react-router-dom";
 
 const Menu = () => {
 	const [menu, setMenu] = useState(false);
 	const menuRef = useRef(null);
 	const { selectedOption } = useNetwork();
 	const { walletAddress } = useWallet();
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -43,7 +45,10 @@ const Menu = () => {
 					<ul className="list-none">
 						<li className="flex items-center justify-center py-3 gap-4 hover:bg-zinc-100 border-b border-zinc-200 cursor-pointer">
 							{" "}
-							<div className="w-[85%] flex items-center gap-4">
+							<div
+								onClick={() => navigate("/account-details")}
+								className="w-[85%] flex items-center gap-4"
+							>
 								<span>
 									<MdOutlineQrCodeScanner />
 								</span>{" "}

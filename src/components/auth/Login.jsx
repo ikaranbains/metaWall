@@ -72,6 +72,9 @@ const Login = () => {
 		const isFirstLogin = localStorage.getItem(`firstLogin_${email}`) === "true";
 
 		setuserData(user);
+		const token = crypto.randomUUID();
+		localStorage.setItem("metaWallToken", token);
+		Cookies.set("metaWallToken", token);
 
 		if (isFirstLogin) {
 			// Show recovery phrase
@@ -104,12 +107,8 @@ const Login = () => {
 	const handleFinalLogin = async (user) => {
 		setloginDetails({ email: "", password: "" });
 
-		const token = crypto.randomUUID();
-		localStorage.setItem("metaWallToken", token);
-		Cookies.set("metaWallToken", token);
-
 		// console.log("user-------------", user);
-		localStorage.setItem("loggedUserId", user.id);
+		localStorage.setItem("loggedUserId", user?.id);
 
 		// Mark first login as completed
 		localStorage.setItem(`firstLogin_${loginDetails?.email}`, "false");
@@ -133,7 +132,7 @@ const Login = () => {
 			return;
 		}
 
-		handleFinalLogin();
+		handleFinalLogin(userData);
 	};
 
 	return (

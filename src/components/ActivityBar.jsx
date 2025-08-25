@@ -4,15 +4,23 @@ import { useWallet } from "../context/WalletContext";
 import { TbDotsVertical } from "react-icons/tb";
 import { GoPlus } from "react-icons/go";
 import { BiRefresh } from "react-icons/bi";
+import { MdOutlineArrowOutward } from "react-icons/md";
+import { GiReceiveMoney } from "react-icons/gi";
+import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
 
-const ActivityBar = ({ setShowImportModal }) => {
+const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
 	const [panelSelected, setPanelSelected] = useState(1);
 	const { walletAddress } = useWallet();
-	const { transactions, loading, fetchTxs, hasMore } = useTxList();
+	const { transactions, loading, fetchTxs, hasMore, hasInitialFetch } =
+		useTxList();
 	const loaderRef = useRef(null);
 	const chainId = localStorage.getItem("chainId");
 	const [showMenu, setShowMenu] = useState(false);
 	const menuRef = useRef(null);
+	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || [];
+	const chain = selectedOption?.chainId;
+
+	console.log(tokensList);
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -129,15 +137,53 @@ const ActivityBar = ({ setShowImportModal }) => {
 				)}
 			</div>
 
-			<div className="flex items-center w-full h-full mt-5 ">
+			<div className="flex items-center w-full h-full mt-2">
 				<div
 					className={`w-full ${
 						panelSelected === 1 ? "block" : "hidden"
-					} flex items-center justify-center`}
+					} flex flex-col items-center h-[45vh] overflow-y-scroll my-scroll`}
 				>
-					<p className="mt-10 text-gray-400 text-sm select-none">
-						No tokens yet
-					</p>
+					{tokensList[chain]?.length ? (
+						tokensList[chain]?.map((token, index) => {
+							return (
+								<div
+									key={index}
+									className="w-full flex flex-col gap-2 overflow-y-scroll my-scroll"
+								>
+									<div className="w-full hover:bg-zinc-100 cursor-pointer py-2 flex items-center justify-between px-3">
+										<div className="flex items-center gap-1">
+											<span className="inline-flex relative w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
+												{token?.name?.slice(0, 1).toUpperCase()}
+												<span className="w-5 h-5 absolute -bottom-1.5 -right-1.5 rounded-full bg-zinc-200 text-[.7rem] flex items-center justify-center font-thin">
+													{chain === 80002 ? "P" : "S"}
+												</span>
+											</span>
+											<div className="flex flex-col justify-center ml-2">
+												<span>{token?.symbol}</span>
+												<img
+													src="src/assets/triangle-up.svg"
+													className="w-3"
+													alt="triangle"
+												/>
+											</div>
+										</div>
+										<div className="flex flex-col items-end">
+											<span className="text-lg font-semibold">
+												{token?.price ? `$${token?.price}` : token?.message}
+											</span>
+											<span className="text-sm text-gray-500">
+												{token?.formattedBalance}
+											</span>
+										</div>
+									</div>
+								</div>
+							);
+						})
+					) : (
+						<p className="mt-10 text-gray-400 text-sm select-none">
+							No tokens yet
+						</p>
+					)}
 				</div>
 				<div
 					className={`w-full ${
@@ -159,34 +205,54 @@ const ActivityBar = ({ setShowImportModal }) => {
 								return acc;
 							}, {})
 						).map(([date, txs]) => (
-							<div key={date} className="w-full 	">
-								<h2 className="text-md font-bold text-gray-700 mt-3 mb-2">
-									{date}
-								</h2>
+							<div key={date} className="w-full">
+								<h2 className="text-gray-500 mt-3 mb-2">{date}</h2>
 								<div className="flex flex-col gap-3">
-									{txs.map((tx) => (
+									{txs.map((tx, idx) => (
 										<div
 											key={tx.hash}
-											className="border rounded-lg p-3 flex items-center justify-between shadow-sm"
+											className="pb-4 p-3 flex items-center justify-between border-b border-gray-200 last:border-b-0"
 										>
-											<div className="flex justify-center flex-col">
-												<span className="text-lg font-medium text-gray-800">
-													{tx.from.toLowerCase() === walletAddress.toLowerCase()
-														? "Sent"
-														: "Received"}
+											<div className="flex gap-3">
+												<span className="w-10 h-10 bg-blue-100 relative rounded-full flex items-center justify-center">
+													{tx.from.toLowerCase() ===
+													walletAddress.toLowerCase() ? (
+														<MdOutlineArrowOutward size={20} />
+													) : (
+														<GiReceiveMoney size={22} />
+													)}
+													<span className="w-5 h-5 absolute -bottom-1.5 -right-1.5 rounded-full bg-black text-white text-[.7rem] flex items-center justify-center font-thin">
+														{chain === 80002 ? "P" : "S"}
+													</span>
 												</span>
-												<span className="text-xs text-gray-500">
-													Hash: {tx.hash.slice(0, 12)}...
-												</span>
-												<span className="text-xs text-gray-400">
-													Block: {tx.blockNumber}
-												</span>
+												<div className="flex justify-center flex-col">
+													<span className="text-lg font-medium text-gray-800">
+														{tx.from.toLowerCase() ===
+														walletAddress.toLowerCase()
+															? "Sent"
+															: "Received"}
+													</span>
+													<span className="text-xs text-gray-500">
+														Hash: {tx.hash.slice(0, 12)}...
+													</span>
+													<span className="text-xs text-gray-400">
+														Block: {tx.blockNumber}
+													</span>
+												</div>
 											</div>
 											<div className="text-xl">
-												{Number(tx.value) / 1e18}{" "}
-												{chainId && Number(chainId) === 80002
-													? "POL"
-													: "SepoliaETH"}
+												<div className="text-xl">
+													{tx.type === "token"
+														? formatTokenAmount(
+																tx.value,
+																tx.tokenDecimal,
+																tx.tokenSymbol
+														  )
+														: formatNativeAmount(
+																tx.value,
+																chainId === "80002" ? "POL" : "SepoliaETH"
+														  )}
+												</div>
 											</div>
 										</div>
 									))}
@@ -196,7 +262,14 @@ const ActivityBar = ({ setShowImportModal }) => {
 
 						{loading && <p className="text-center text-gray-500">Loading...</p>}
 						<div ref={loaderRef} className="h-10"></div>
-						{!hasMore && (
+
+						{!loading && hasInitialFetch && transactions.length === 0 && (
+							<p className="text-center text-gray-400 text-sm">
+								No transactions yet
+							</p>
+						)}
+
+						{!loading && transactions.length > 0 && !hasMore && (
 							<p className="text-center text-gray-400 text-sm">
 								No more transactions
 							</p>
