@@ -1,7 +1,9 @@
 import React from "react";
 import TxHeader from "./common/TxHeader";
+import { useNavigate } from "react-router-dom";
 
 const AccountsPage = () => {
+    const navigate = useNavigate();
 	return (
 		<div className="w-full h-full flex items-center justify-center">
 			<div className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-300 bg-white mt-13 w-[30%] m-auto min-h-[90vh] flex flex-col">
