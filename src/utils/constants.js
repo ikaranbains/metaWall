@@ -24,8 +24,8 @@ export const chainConfigs = [
 		wss: "wss://polygon-amoy.infura.io/ws/v3/4213210e52fd4c4bba5138978d5966cf",
 		blockExplorerUrls: ["https://oklink.com/amoy"],
 		nativeCurrency: {
-			name: "MATIC",
-			symbol: "MATIC",
+			name: "POL",
+			symbol: "POL",
 			decimals: 18,
 		},
 	},

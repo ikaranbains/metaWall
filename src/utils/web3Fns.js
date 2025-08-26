@@ -29,6 +29,45 @@ export const calculateGasFee = async ({ web3, from, to, amt }) => {
 	}
 };
 
+export const calculateGasFeeToken = async ({
+	web3,
+	from,
+	to,
+	amt,
+	contract,
+	selectedAsset,
+}) => {
+	try {
+		const decimals = selectedAsset?.decimals || 18;
+		const value = (Number(amt) * Math.pow(10, decimals)).toString();
+
+		const data = contract.methods.transfer(to, value).encodeABI();
+
+		// Estimate gas for token transfer (always value=0 for tokens)
+		const [gasPrice, gasLimit] = await Promise.all([
+			web3.eth.getGasPrice(),
+			web3.eth.estimateGas({
+				from,
+				to: selectedAsset?.address,
+				data,
+				value: "0x0",
+			}),
+		]);
+
+		const totalFeeWei = BigInt(gasLimit) * BigInt(gasPrice);
+		const totalFeeEther = web3.utils.fromWei(totalFeeWei.toString(), "ether");
+
+		return {
+			gas: Number(gasLimit),
+			gasPrice: gasPrice.toString(),
+			totalFeeEther,
+		};
+	} catch (error) {
+		console.error("calculateGasFeeToken error:", error);
+		throw error;
+	}
+};
+
 export const sendTx = async ({
 	web3,
 	from,
@@ -79,6 +118,51 @@ export const sendTx = async ({
 				await new Promise((res) => setTimeout(res, 5000));
 			}
 		}
+		throw error;
+	}
+};
+
+export const sendTokenTx = async ({
+	web3,
+	from,
+	to,
+	amt,
+	gasLimit,
+	gasPrice,
+	nonce,
+	privateKey,
+	contract,
+	selectedAsset,
+}) => {
+	try {
+		if (!from || !to) throw new Error("Missing sender or receiver address");
+		if (!amt) throw new Error("Amount is required");
+		if (!privateKey) throw new Error("Private key missing");
+
+		const decimals = selectedAsset?.decimals || 18;
+		const value = (Number(amt) * Math.pow(10, decimals)).toString();
+
+		const data = contract.methods.transfer(to, value).encodeABI();
+
+		const tx = {
+			from,
+			to: selectedAsset?.address,
+			value: "0x0",
+			data,
+			gas: gasLimit,
+			gasPrice,
+			nonce,
+		};
+		console.log("ERC20 TX built:", tx);
+
+		const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+		const receipt = await web3.eth.sendSignedTransaction(
+			signedTx.rawTransaction
+		);
+
+		return receipt;
+	} catch (error) {
+		console.error("sendTokenTx error:", error);
 		throw error;
 	}
 };

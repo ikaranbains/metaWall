@@ -10,19 +10,30 @@ import TxButtons from "./buttons/TxButtons";
 import TxHeader from "./common/TxHeader";
 import ToSection from "./ToSection";
 import FromSection from "./FromSection";
+import SelectTokenModal from "./modals/SelectTokenModal";
 
 const Send = () => {
 	const navigate = useNavigate();
 	const { walletAddress } = useWallet();
-	const { addressInput, setAddressInput, amtInput, setAmtInput } = useSend();
+	const {
+		addressInput,
+		setAddressInput,
+		amtInput,
+		setAmtInput,
+		selectedAsset,
+		setSelectedAsset,
+	} = useSend();
 	const [showStep2, setShowStep2] = useState(false);
 	const [disabled, setDisabled] = useState(true);
 	const { selectedOption } = useNetwork();
 	const [balance, setBalance] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [showSelectTokenModal, setShowSelectTokenModal] = useState(false);
+	const tokensList = JSON.parse(localStorage.getItem("tokensList"));
+	const chainId = localStorage.getItem("chainId");
+	// const [selectedAsset, setSelectedAsset] = useState(tokensList[chainId][0]);
 
 	const getCachedBalance = () => {
-		const chainId = localStorage.getItem("chainId");
 		if (!chainId) return console.log("no chainid found");
 		const key = `cachedBalance_${chainId}_${walletAddress}`;
 		const localBalance = localStorage.getItem(key);
@@ -56,15 +67,17 @@ const Send = () => {
 			return toast.error("Amount is required!!");
 		const amt = parseFloat(amtInput);
 		const blcFloat = parseFloat(balance);
-		if (blcFloat <= amt) return toast.error("Insufficient Funds!!");
-		console.log("Sent!!");
+		const blnToken = parseFloat(selectedAsset?.formattedBalance || 0);
+		if (selectedAsset?.name === "POL" || selectedAsset?.name === "ETH") {
+			if (blcFloat <= amt) return toast.error("Insufficient Funds!!");
+		} else {
+			if (blnToken < amt) return toast.error("Insufficient Funds!!");
+		}
 		setLoading(true);
 		setTimeout(() => {
 			setLoading(false);
 			navigate("/review");
 		}, 1500);
-
-		// setAmtInput("");
 	};
 
 	useEffect(() => {
@@ -74,6 +87,18 @@ const Send = () => {
 	return (
 		<div className="w-full h-full flex items-center justify-center">
 			{loading && <Loader />}
+			{showSelectTokenModal && (
+				<SelectTokenModal
+					isOpen={showSelectTokenModal}
+					onClose={() => setShowSelectTokenModal(false)}
+					selectedOption={selectedOption}
+					tokensList={tokensList}
+					chainId={chainId}
+					balance={balance}
+					setSelectedAsset={setSelectedAsset}
+					selectedAsset={selectedAsset}
+				/>
+			)}
 			<div className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-300 bg-white mt-13 w-[65%] m-auto min-h-[87vh] flex flex-col">
 				<TxHeader
 					onClick={() => navigate("/home")}
@@ -92,6 +117,8 @@ const Send = () => {
 							balance={balance}
 							onSubmit={(e) => handleSubmit(e)}
 							formId="toForm"
+							setShowSelectTokenModal={setShowSelectTokenModal}
+							selectedAsset={selectedAsset}
 						/>
 
 						<ToSection

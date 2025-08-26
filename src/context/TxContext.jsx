@@ -8,6 +8,21 @@ export const TxContext = ({ children }) => {
 	const [amtInput, setAmtInput] = useState("");
 	const { userData } = useUser();
 	const [privateKey, setPrivateKey] = useState(null);
+	const tokensList = JSON.parse(localStorage.getItem("tokensList"));
+	const chainId = localStorage.getItem("chainId");
+	const [selectedAsset, setSelectedAsset] = useState(
+		tokensList
+			? tokensList[chainId][0]
+			: {
+					name: "POL",
+					symbol: "POL",
+					decimals: 18,
+					formattedBalance: "0.097703",
+					price: "$ 0.2358",
+					address: null,
+					tokenType: "native",
+			  }
+	);
 
 	useEffect(() => {
 		if (userData) {
@@ -28,6 +43,8 @@ export const TxContext = ({ children }) => {
 				amtInput,
 				setAmtInput,
 				privateKey,
+				selectedAsset,
+				setSelectedAsset,
 			}}
 		>
 			{children}

@@ -8,7 +8,13 @@ import { MdOutlineArrowOutward } from "react-icons/md";
 import { GiReceiveMoney } from "react-icons/gi";
 import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
 
-const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
+const ActivityBar = ({
+	setShowImportModal,
+	selectedOption,
+	cachedBalance,
+	refreshTokensList,
+	refreshing,
+}) => {
 	const [panelSelected, setPanelSelected] = useState(1);
 	const { walletAddress } = useWallet();
 	const { transactions, loading, fetchTxs, hasMore, hasInitialFetch } =
@@ -20,7 +26,7 @@ const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
 	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || [];
 	const chain = selectedOption?.chainId;
 
-	console.log(tokensList);
+	// console.log(tokensList);
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -123,7 +129,10 @@ const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
 								</div>
 							</li>
 
-							<li className="flex items-center justify-center py-3 gap-4 hover:bg-zinc-100 border-b border-zinc-200 cursor-pointer">
+							<li
+								onClick={refreshTokensList}
+								className="flex items-center justify-center py-3 gap-4 hover:bg-zinc-100 border-b border-zinc-200 cursor-pointer"
+							>
 								{" "}
 								<div className="w-[85%] flex items-center gap-4">
 									<span>
@@ -143,7 +152,11 @@ const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
 						panelSelected === 1 ? "block" : "hidden"
 					} flex flex-col items-center h-[45vh] overflow-y-scroll my-scroll`}
 				>
-					{tokensList[chain]?.length ? (
+					{refreshing ? (
+						<p className="mt-10 text-gray-500 text-sm select-none animate-pulse">
+							Refreshing list...
+						</p>
+					) : tokensList[chain]?.length ? (
 						tokensList[chain]?.map((token, index) => {
 							return (
 								<div
@@ -153,8 +166,8 @@ const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
 									<div className="w-full hover:bg-zinc-100 cursor-pointer py-2 flex items-center justify-between px-3">
 										<div className="flex items-center gap-1">
 											<span className="inline-flex relative w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
-												{token?.name?.slice(0, 1).toUpperCase()}
-												<span className="w-5 h-5 absolute -bottom-1.5 -right-1.5 rounded-full bg-zinc-200 text-[.7rem] flex items-center justify-center font-thin">
+												{token?.symbol?.slice(0, 1).toUpperCase()}
+												<span className="w-4 h-4 absolute -bottom-1 -right-1 rounded-full bg-zinc-100 text-[.7rem] flex items-center justify-center font-thin">
 													{chain === 80002 ? "P" : "S"}
 												</span>
 											</span>
@@ -169,10 +182,12 @@ const ActivityBar = ({ setShowImportModal, isImported, selectedOption }) => {
 										</div>
 										<div className="flex flex-col items-end">
 											<span className="text-lg font-semibold">
-												{token?.price ? `$${token?.price}` : token?.message}
+												{token?.price ? token?.price : token?.message}
 											</span>
 											<span className="text-sm text-gray-500">
-												{token?.formattedBalance}
+												{token?.formattedBalance === 0
+													? cachedBalance
+													: token.formattedBalance}
 											</span>
 										</div>
 									</div>

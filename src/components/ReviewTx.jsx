@@ -9,16 +9,22 @@ import Web3 from "web3";
 import Loader from "./common/Loader";
 import toast from "react-hot-toast";
 import TxSuccessModal from "./modals/TxSuccessModal";
-import { calculateGasFee, sendTx } from "../utils/web3Fns";
+import {
+	calculateGasFee,
+	calculateGasFeeToken,
+	sendTokenTx,
+	sendTx,
+} from "../utils/web3Fns";
 import Address from "./common/Address";
 import TxButtons from "./buttons/TxButtons";
 import DataStrip from "./common/DataStrip";
 import TxHeader from "./common/TxHeader";
+import ERC20ABI from "../ABI/TOKEN_ABI.json";
 
 const ReviewTx = () => {
 	const navigate = useNavigate();
-	const { addressInput, amtInput, privateKey } = useSend();
-	const { selectedOption } = useNetwork();
+	const { addressInput, amtInput, privateKey, selectedAsset } = useSend();
+	const { selectedOption, getBalance } = useNetwork();
 	const web3 = new Web3(selectedOption?.rpc);
 	const { walletAddress } = useWallet();
 	const [networkFee, setNetworkFee] = useState(null);
@@ -28,8 +34,8 @@ const ReviewTx = () => {
 	const [gasPrice, setGasPrice] = useState("");
 	const [gasLimit, setGasLimit] = useState("");
 	const chainId = Number(localStorage.getItem("chainId"));
-	const [maxPriorityFeePerGas, setmaxPriorityFeePerGas] = useState();
-	const [maxFeePerGas, setmaxFeePerGas] = useState();
+	const { accountName } = useWallet();
+	const contract = new web3.eth.Contract(ERC20ABI, selectedAsset?.address);
 
 	const sendTxToNetwork = async () => {
 		try {
@@ -47,6 +53,8 @@ const ReviewTx = () => {
 
 			console.log("Tx receipt -------- ", receipt);
 			toast.success("Transaction successfull");
+			await getBalance();
+
 			setLoading(false);
 			setShowSuccess(true);
 			setTimeout(() => {
@@ -61,22 +69,75 @@ const ReviewTx = () => {
 		}
 	};
 
+	const sendTokenTxToNetwork = async () => {
+		try {
+			setLoading(true);
+
+			const receipt = await sendTokenTx({
+				web3,
+				from: walletAddress,
+				to: addressInput,
+				amt: amtInput,
+				gasLimit,
+				gasPrice,
+				nonce,
+				privateKey,
+				contract,
+				selectedAsset,
+			});
+
+			console.log("Tx receipt -------- ", receipt);
+			toast.success("Transaction successfull");
+			await getBalance();
+			setLoading(false);
+			setShowSuccess(true);
+			setTimeout(() => {
+				setShowSuccess(false);
+				navigate("/home");
+			}, 3000);
+		} catch (error) {
+			console.error("TokenTx error: ", error);
+			toast.error("TokenTx Failed!!");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleSend = () => {
+		if (selectedAsset?.tokenType === "native") {
+			sendTxToNetwork();
+		} else {
+			sendTokenTxToNetwork();
+		}
+	};
+
 	useEffect(() => {
 		const fetchFee = async () => {
 			if (!walletAddress || !addressInput || !selectedOption) return;
 
 			try {
-				const fee = await calculateGasFee({
-					web3,
-					from: walletAddress,
-					to: addressInput,
-					amt: amtInput,
-				});
+				let fee;
+				if (selectedAsset && selectedAsset?.tokenType === "native") {
+					fee = await calculateGasFee({
+						web3,
+						from: walletAddress,
+						to: addressInput,
+						amt: amtInput,
+					});
+				} else {
+					fee = await calculateGasFeeToken({
+						web3,
+						from: walletAddress,
+						to: addressInput,
+						amt: amtInput,
+						contract: contract,
+						selectedAsset,
+					});
+				}
 
 				setGasLimit(fee.gas);
 				setGasPrice(fee.gasPrice);
 				setNetworkFee(fee.totalFeeEther);
-				
 			} catch (err) {
 				console.error("Error fetching network fee:", err);
 			}
@@ -118,7 +179,7 @@ const ReviewTx = () => {
 					<div className="w-full h-120 pt-10 px-4 flex flex-col gap-6">
 						<h2 className="text-3xl font-bold text-center">
 							{amtInput ? amtInput : ""}{" "}
-							{selectedOption?.nativeCurrency?.symbol}
+							{selectedAsset?.symbol ? selectedAsset?.symbol : ""}
 						</h2>
 						<div className="flex flex-col items-center gap-4 mt-6">
 							<DataStrip>
@@ -126,7 +187,7 @@ const ReviewTx = () => {
 									<p>From</p>
 									<div className="bg-[#eceeff] w-27 flex gap-1 items-center justify-center rounded-xl">
 										<DeterministicPieIcon address={walletAddress} size={18} />
-										<p className="text-blue-700">Account 1</p>
+										<p className="text-blue-700">{accountName}</p>
 									</div>
 								</div>
 								<span className="text-gray-400 ml-20">
@@ -175,7 +236,7 @@ const ReviewTx = () => {
 					</div>
 
 					<div className="w-full py-4 px-4 flex items-center justify-between gap-3 bg-white">
-						<TxButtons onClick={sendTxToNetwork} review={true} />
+						<TxButtons onClick={handleSend} review={true} />
 					</div>
 				</div>
 			</div>

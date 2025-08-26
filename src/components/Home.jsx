@@ -26,13 +26,16 @@ const Home = () => {
 	const [disabled, setDisabled] = useState(true);
 	const [showTokenDetails, setShowTokenDetails] = useState(false);
 	const [step2, setStep2] = useState(false);
-	const [isImported, setIsImported] = useState(false);
+	// const [isImported, setIsImported] = useState(false);
 	const [tokensList, setTokensList] = useState({
 		11155111: [],
 		80002: [],
 	});
 	const web3 = new Web3(selectedOption?.rpc);
 	const chainId = selectedOption?.chainId;
+	let key = `cachedBalance_${chainId}_${walletAddress}`;
+	const cachedBalance = localStorage.getItem(key);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const handleChange = async (option) => {
 		setSelectedOption(option);
@@ -64,7 +67,7 @@ const Home = () => {
 			name,
 			symbol,
 			decimals,
-			formattedBalance: format,
+			formattedBalance: format.toFixed(6),
 			price,
 			message,
 		};
@@ -75,12 +78,99 @@ const Home = () => {
 
 		toast.success("Token imported!!");
 		setShowImportModal(false);
-		setTokenAddress("");
 		setDisabled(true);
 		setShowTokenDetails(false);
 		setStep2(false);
-		setIsImported(true);
+		// setIsImported(true);
 	};
+
+	const refreshTokensList = async () => {
+		if (!walletAddress || !chainId) return;
+		setRefreshing(true); // start loader
+
+		try {
+			const updatedTokens = await Promise.all(
+				tokensList[chainId].map(async (token) => {
+					if (token.tokenType === "native") {
+						const nativeBalance = await web3.eth.getBalance(walletAddress);
+						const formatted = Number(nativeBalance) / 10 ** token.decimals;
+						const { price, message } = await getCryptoPrices(token.symbol);
+
+						return {
+							...token,
+							formattedBalance: formatted,
+							price: price ? `$ ${Number(price)}` : message,
+						};
+					} else {
+						const contract = new web3.eth.Contract(ERC20ABI, token.address);
+						const balance = await contract.methods
+							.balanceOf(walletAddress)
+							.call();
+						const formatted = Number(balance) / 10 ** token.decimals;
+						const { price, message } = await getCryptoPrices(token.symbol);
+
+						return {
+							...token,
+							formattedBalance: formatted,
+							price: price ? `$ ${Number(price)}` : message,
+						};
+					}
+				})
+			);
+
+			const updatedList = { ...tokensList, [chainId]: updatedTokens };
+			setTokensList(updatedList);
+			localStorage.setItem("tokensList", JSON.stringify(updatedList));
+			toast.success("Token list refreshed!");
+		} catch (err) {
+			console.error(err);
+			toast.error("Failed to refresh token list");
+		} finally {
+			setRefreshing(false); // stop loader
+		}
+	};
+
+	//add native currency in tokens list only on top only once
+	useEffect(() => {
+		const chain = selectedOption?.chainId;
+		if (!chain) return;
+
+		const handleNativePrice = async () => {
+			const { price, message } = await getCryptoPrices(
+				selectedOption?.nativeCurrency?.symbol
+			);
+			if (message) {
+				console.log("message-----", message);
+			}
+			// console.log("native price", price);
+
+			setTokensList((prev) => {
+				if (prev[chain].length > 0) return prev;
+
+				const nativeToken = {
+					name: selectedOption?.nativeCurrency?.name,
+					symbol: selectedOption?.nativeCurrency?.symbol,
+					decimals: selectedOption?.nativeCurrency?.decimals,
+					formattedBalance: cachedBalance ? cachedBalance : 0,
+					price: price ? `$ ${Number(price)}` : message,
+					address: null,
+					tokenType: "native",
+				};
+
+				const updated = {
+					...prev,
+					[chain]: [nativeToken, ...prev[chain]],
+				};
+
+				localStorage.setItem("tokensList", JSON.stringify(updated));
+				return updated;
+			});
+
+			// console.log(price);
+		};
+
+		handleNativePrice();
+	}, [selectedOption, balance]);
 
 	useEffect(() => {
 		const fetchTokenDetails = async () => {
@@ -95,13 +185,47 @@ const Home = () => {
 			if (tokenAddress.length === 42) {
 				const res = await getTokenDetails();
 
-				if (res) {
+				if (!res) {
+					setShowTokenDetails(false);
+					setDisabled(true);
+					return toast.error("Invalid token address");
+				}
+
+				const isAlreadyAdded = tokensList[chain]?.find(
+					(item) => item.address === tokenAddress
+				);
+
+				if (isAlreadyAdded) {
+					console.log("duplicate token found ---------------------");
+					// update existing token details
+					setTokensList((prev) => {
+						const updated = {
+							...prev,
+							[chain]: prev[chain].map((item) => {
+								return item.address === tokenAddress
+									? {
+											...item,
+											formattedBalance: Number(res.formattedBalance),
+											price: res.price ? Number(res.price) : null,
+									  }
+									: item;
+							}),
+						};
+
+						// console.log("updated------------------", updated);
+						localStorage.setItem("tokensList", JSON.stringify(updated));
+						return updated;
+					});
+					setShowTokenDetails(true);
+					setDisabled(false);
+				} else {
 					const token = {
 						...res,
 						address: tokenAddress,
 						decimals: Number(res.decimals),
 						formattedBalance: Number(res.formattedBalance),
 						price: res.price ? Number(res.price) : null,
+						tokenType: "custom",
 					};
 
 					setTokensList((prev) => {
@@ -116,9 +240,6 @@ const Home = () => {
 					});
 					setShowTokenDetails(true);
 					setDisabled(false);
-				} else {
-					setShowTokenDetails(false);
-					setDisabled(true);
 				}
 			}
 		};
@@ -132,8 +253,6 @@ const Home = () => {
 			setTokensList(JSON.parse(stored));
 		}
 	}, []);
-
-	console.log(tokensList);
 
 	return (
 		<div className="min-h-screen relative overflow-x-hidden">
@@ -196,8 +315,10 @@ const Home = () => {
 					</div>
 					<ActivityBar
 						setShowImportModal={setShowImportModal}
-						isImported={isImported}
 						selectedOption={selectedOption}
+						cachedBalance={cachedBalance}
+						refreshTokensList={refreshTokensList}
+						refreshing={refreshing}
 					/>
 				</div>
 			</div>

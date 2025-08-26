@@ -31,6 +31,7 @@ export async function getCryptoPrices(symbol) {
 		});
 
 		if (res.success && res.data.USD) {
+			// console.log("response in fn ---------------", res);	
 			return { success: true, price: res.data.USD, message: "Price fetched" };
 		} else {
 			return {

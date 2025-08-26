@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "motion/react";
+import { useWallet } from "../../context/WalletContext";
 
 const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 	const [copy, setCopy] = useState(false);
@@ -20,6 +21,7 @@ const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 			.catch((err) => console.log("error", err));
 		setTimeout(() => setCopy(false), 2000);
 	};
+	const {accountName} = useWallet();
 
 	return (
 		<AnimatePresence>
@@ -56,7 +58,7 @@ const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 									<QRCode value={walletAddress} size={160} />
 								</div>
 							</div>
-							<p>Account 1</p>
+							<p>{accountName}</p>
 							<p className="w-65 whitespace-normal break-all text-center">
 								{walletAddress.slice(0, 6)}
 								<span className="text-gray-400">

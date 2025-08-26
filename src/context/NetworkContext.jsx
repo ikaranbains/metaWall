@@ -78,15 +78,9 @@ export const NetworkContext = ({ children }) => {
 		const cached = localStorage.getItem(key);
 		if (cached) {
 			setBalance(cached);
-			console.log(
-				"⚡ Cached balance loaded:",
-				cached,
-				"for",
-				selectedOption.label
-			);
+		
 		}
-
-		// then fetch fresh
+	
 		(async () => {
 			try {
 				const balanceWei = await web3Provider.eth.getBalance(walletAddress);

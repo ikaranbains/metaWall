@@ -6,6 +6,7 @@ const WalletDataContext = createContext();
 export const WalletContext = ({ children }) => {
 	const [wallet, setWallet] = useState({});
 	const [walletAddress, setWalletAddress] = useState("");
+	const [accountName, setAccountName] = useState("Account 1");
 
 	useEffect(() => {
 		const address =
@@ -14,7 +15,14 @@ export const WalletContext = ({ children }) => {
 	}, [wallet]);
 	return (
 		<WalletDataContext.Provider
-			value={{ wallet, setWallet, walletAddress, setWalletAddress }}
+			value={{
+				wallet,
+				setWallet,
+				walletAddress,
+				setWalletAddress,
+				accountName,
+				setAccountName,
+			}}
 		>
 			{children}
 		</WalletDataContext.Provider>
