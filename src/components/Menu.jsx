@@ -4,14 +4,15 @@ import { LuSettings, LuSquareArrowOutUpRight } from "react-icons/lu";
 import { MdOutlineQrCodeScanner } from "react-icons/md";
 import { IoIosMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
-import { useWallet } from "../context/WalletContext";
 import { useNavigate } from "react-router-dom";
+import { useAccounts } from "../context/AccountsContext";
 
 const Menu = () => {
 	const [menu, setMenu] = useState(false);
 	const menuRef = useRef(null);
 	const { selectedOption } = useNetwork();
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
 	const navigate = useNavigate();
 
 	useEffect(() => {

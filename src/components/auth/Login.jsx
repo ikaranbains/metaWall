@@ -109,6 +109,11 @@ const Login = () => {
 
 		// console.log("user-------------", user);
 		localStorage.setItem("loggedUserId", user?.id);
+		// console.log("user ------------",user)
+		localStorage.setItem("selectedAccount", JSON.stringify({
+			name: "Account 1",
+			address: user?.userWallet[0]?.account,
+		}));
 
 		// Mark first login as completed
 		localStorage.setItem(`firstLogin_${loginDetails?.email}`, "false");

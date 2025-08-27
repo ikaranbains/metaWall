@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiCall } from "../utils/apiService";
-import { useWallet } from "../context/WalletContext";
+import { useAccounts } from "../context/AccountsContext";
 
 const VITE_ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
 
@@ -9,7 +9,8 @@ export const useTxList = (chainId, pageSize = 20) => {
 	const [page, setPage] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
 	const [hasInitialFetch, setHasInitialFetch] = useState(false);
 
 	const fetchTxs = useCallback(async () => {

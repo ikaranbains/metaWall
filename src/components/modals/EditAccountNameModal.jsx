@@ -1,6 +1,7 @@
 import React from "react";
 import { IoIosClose } from "react-icons/io";
 import { motion, AnimatePresence } from "motion/react";
+import ModalHeader from "../common/ModalHeader";
 
 const EditAccountNameModal = ({
 	isOpen,
@@ -30,14 +31,8 @@ const EditAccountNameModal = ({
 						transition={{ duration: 0.35, ease: "easeInOut" }}
 					>
 						<div className="w-full min-h-full mb-4">
-							<div className="w-full flex flex-col items-end justify-between">
-								<div className="w-[70%] mt-2 pr-2 flex items-center justify-between">
-									<h2 className="font-semibold text-lg">Edit account name</h2>
-									<span onClick={onClose} className="cursor-pointer">
-										<IoIosClose size={22} />
-									</span>
-								</div>
-							</div>
+							<ModalHeader title="Edit account name" onClose={onClose} />
+
 							<div className="w-full my-4 px-3 flex flex-col gap-2">
 								<p className="font-medium">Name</p>
 								<input

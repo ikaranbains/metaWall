@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNetwork } from "../context/NetworkContext";
 import { useNavigate } from "react-router-dom";
-import { useWallet } from "../context/WalletContext";
 import Web3 from "web3";
 import ERC20ABI from "../ABI/TOKEN_ABI.json";
 import { getCryptoPrices } from "../utils/utilityFn";
@@ -15,13 +14,18 @@ import HomeButton from "./buttons/HomeButton";
 import { GoArrowUpRight } from "react-icons/go";
 import { MdOutlineQrCodeScanner } from "react-icons/md";
 import ActivityBar from "./ActivityBar";
+import ManageAccountsModal from "./modals/ManageAccountsModal";
+import { useAccounts } from "../context/AccountsContext";
 
 const Home = () => {
 	const navigate = useNavigate();
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
+	const accountName = selectedAccount?.name;
 	const { selectedOption, setSelectedOption, balance } = useNetwork();
 	const [showReceiveModal, setShowReceiveModal] = useState(false);
 	const [showImportModal, setShowImportModal] = useState(false);
+	const [showManageAccountModal, setShowManageAccountModal] = useState(false);
 	const [tokenAddress, setTokenAddress] = useState("");
 	const [disabled, setDisabled] = useState(true);
 	const [showTokenDetails, setShowTokenDetails] = useState(false);
@@ -280,6 +284,15 @@ const Home = () => {
 					handleImportToken={handleImportToken}
 				/>
 			)}
+			{showManageAccountModal && (
+				<ManageAccountsModal
+					isOpen={showManageAccountModal}
+					onClose={() => setShowManageAccountModal(false)}
+					walletAddress={walletAddress}
+					accountName={accountName}
+				/>
+			)}
+
 			<div className="w-full h-full bg-[#f3f5f9] absolute"></div>
 			<div className="absolute w-full z-[99]">
 				<h2 className="font-bold text-xl text-center mt-10 leading-none">
@@ -294,7 +307,11 @@ const Home = () => {
 								handleChange={handleChange}
 							/>
 						</div>
-						<Accounts address={walletAddress} />
+						<Accounts
+							address={walletAddress}
+							setShowManageAccountModal={setShowManageAccountModal}
+							accountName={accountName}
+						/>
 						<Menu />
 					</div>
 

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { MdArrowForwardIos, MdOutlineKeyboardArrowLeft } from "react-icons/md";
+import { useEffect, useState } from "react";
+import { MdArrowForwardIos } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useSend } from "../context/TxContext";
 import { useNetwork } from "../context/NetworkContext";
 import DeterministicPieIcon from "./common/DeterministicPieIcon";
-import { useWallet } from "../context/WalletContext";
 import Web3 from "web3";
 import Loader from "./common/Loader";
 import toast from "react-hot-toast";
@@ -20,13 +19,16 @@ import TxButtons from "./buttons/TxButtons";
 import DataStrip from "./common/DataStrip";
 import TxHeader from "./common/TxHeader";
 import ERC20ABI from "../ABI/TOKEN_ABI.json";
+import { useAccounts } from "../context/AccountsContext";
 
 const ReviewTx = () => {
 	const navigate = useNavigate();
 	const { addressInput, amtInput, privateKey, selectedAsset } = useSend();
 	const { selectedOption, getBalance } = useNetwork();
 	const web3 = new Web3(selectedOption?.rpc);
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
+	const accountName = selectedAccount?.name;
 	const [networkFee, setNetworkFee] = useState(null);
 	const [nonce, setNonce] = useState(null);
 	const [loading, setLoading] = useState(false);
@@ -34,7 +36,6 @@ const ReviewTx = () => {
 	const [gasPrice, setGasPrice] = useState("");
 	const [gasLimit, setGasLimit] = useState("");
 	const chainId = Number(localStorage.getItem("chainId"));
-	const { accountName } = useWallet();
 	const contract = new web3.eth.Contract(ERC20ABI, selectedAsset?.address);
 
 	const sendTxToNetwork = async () => {

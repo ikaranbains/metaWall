@@ -7,6 +7,7 @@ import {
 } from "react";
 import { chainConfigs } from "../utils/constants";
 import Web3 from "web3";
+import { useAccounts } from "./AccountsContext";
 
 export const NetworkDataContext = createContext();
 
@@ -21,10 +22,11 @@ export const NetworkContext = ({ children }) => {
 		}
 		return chainConfigs[0];
 	});
-	
+
 	const [balance, setBalance] = useState("0");
 	const [web3Provider, setWeb3Provider] = useState(null);
-	const walletAddress = localStorage.getItem("walletAddress");
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
 
 	// restore chain on reload
 	useEffect(() => {

@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import TxHeader from "./common/TxHeader";
 import { useNavigate } from "react-router-dom";
-import { useWallet } from "../context/WalletContext";
 import DeterministicPieIcon from "./common/DeterministicPieIcon";
 import AccountStripWrapper from "./common/AccountStripWrapper";
 import { MdArrowForwardIos, MdOutlineEdit } from "react-icons/md";
 import AccountStrip from "./common/AccountStrip";
 import EditAccountNameModal from "./modals/EditAccountNameModal";
 import toast from "react-hot-toast";
+import { useAccounts } from "../context/AccountsContext";
 
 const AccountsPage = () => {
 	const navigate = useNavigate();
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const accountName = selectedAccount?.name;
+	const walletAddress = selectedAccount?.address;
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [disabled, setDisabled] = useState(true);
-	const { accountName, setAccountName } = useWallet();
 	const [accountNameInput, setAccountNameInput] = useState("");
 
 	const handleAccountName = () => {
-		setAccountName(accountNameInput.trim());
+		// setAccountName(accountNameInput.trim());
 		setShowEditModal(false);
 		toast.success("Account name updated successfully");
 		setAccountNameInput("");
@@ -40,7 +41,7 @@ const AccountsPage = () => {
 					onClose={() => setShowEditModal(false)}
 					disabled={disabled}
 					accountName={accountName}
-					setAccountName={setAccountName}
+					// setAccountName={setAccountName}
 					accountNameInput={accountNameInput}
 					setAccountNameInput={setAccountNameInput}
 					handleAccountName={handleAccountName}

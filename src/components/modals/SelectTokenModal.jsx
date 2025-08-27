@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { IoIosClose } from "react-icons/io";
+import ModalHeader from "../common/ModalHeader";
 const SelectTokenModal = ({
 	isOpen,
 	onClose,
@@ -31,16 +32,7 @@ const SelectTokenModal = ({
 						transition={{ duration: 0.35, ease: "easeInOut" }}
 					>
 						<div className="w-full min-h-full">
-							<div className="w-full flex flex-col items-end justify-between">
-								<div className="w-[73%] mt-2 pr-2 flex items-center justify-between">
-									<h2 className="font-semibold text-lg">
-										Select asset to send
-									</h2>
-									<span onClick={onClose} className="cursor-pointer">
-										<IoIosClose size={22} />
-									</span>
-								</div>
-							</div>
+							<ModalHeader title="Select asset to send" onClose={onClose} />
 							<div className="w-full mt-4 px-3 flex flex-col gap-2 pb-7">
 								<span className="inline-flex bg-zinc-200 px-3 py-1 rounded-full w-fit text-xs">
 									{selectedOption?.label}

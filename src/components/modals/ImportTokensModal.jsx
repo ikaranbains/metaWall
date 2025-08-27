@@ -1,6 +1,7 @@
 import { IoIosClose } from "react-icons/io";
 import { motion, AnimatePresence } from "motion/react";
 import toast from "react-hot-toast";
+import ModalHeader from "../common/ModalHeader";
 
 const ImportTokensModal = ({
 	isOpen,
@@ -35,14 +36,7 @@ const ImportTokensModal = ({
 						transition={{ duration: 0.35, ease: "easeInOut" }}
 					>
 						<div className="w-full min-h-full mb-4">
-							<div className="w-full flex flex-col items-end justify-between">
-								<div className="w-[65%] mt-2 pr-2 flex items-center justify-between">
-									<h2 className="font-semibold text-xl">Import Tokens</h2>
-									<span onClick={onClose} className="cursor-pointer">
-										<IoIosClose size={22} />
-									</span>
-								</div>
-							</div>
+							<ModalHeader title="Import Tokens" onClose={onClose} />
 
 							{step2 ? (
 								<div>

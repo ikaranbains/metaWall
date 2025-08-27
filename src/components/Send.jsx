@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useWallet } from "../context/WalletContext";
 import { useNetwork } from "../context/NetworkContext";
 import { isValidWalletAddress } from "../utils/validation";
 import toast from "react-hot-toast";
@@ -11,10 +10,12 @@ import TxHeader from "./common/TxHeader";
 import ToSection from "./ToSection";
 import FromSection from "./FromSection";
 import SelectTokenModal from "./modals/SelectTokenModal";
+import { useAccounts } from "../context/AccountsContext";
 
 const Send = () => {
 	const navigate = useNavigate();
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
 	const {
 		addressInput,
 		setAddressInput,
@@ -31,7 +32,6 @@ const Send = () => {
 	const [showSelectTokenModal, setShowSelectTokenModal] = useState(false);
 	const tokensList = JSON.parse(localStorage.getItem("tokensList"));
 	const chainId = localStorage.getItem("chainId");
-	// const [selectedAsset, setSelectedAsset] = useState(tokensList[chainId][0]);
 
 	const getCachedBalance = () => {
 		if (!chainId) return console.log("no chainid found");

@@ -5,7 +5,6 @@ import { Buffer } from "buffer";
 import { addData } from "../../utils/idb";
 import { nanoid } from "nanoid";
 import { useNavigate } from "react-router-dom";
-import { useWallet } from "../../context/WalletContext";
 import Web3 from "web3";
 import { useNetwork } from "../../context/NetworkContext";
 import { registerValidation } from "../../utils/validation";
@@ -18,7 +17,6 @@ import AuthCard from "../common/AuthCard";
 import StepButtons from "../buttons/StepButtons";
 import AuthForm from "../common/AuthForm";
 import StepWrapper from "../common/StepWrapper";
-import Cookies from "js-cookie";
 import { chainConfigs } from "../../utils/constants";
 window.Buffer = Buffer;
 
@@ -35,9 +33,7 @@ const Register = () => {
 		password: "",
 	});
 	const navigate = useNavigate();
-	const { setWallet } = useWallet();
 	const { selectedOption } = useNetwork();
-
 	const [recoveryPhrase] = useState(() => {
 		const arr = generateMnemonic().split(" ");
 		return arr ? arr : [];
@@ -92,9 +88,9 @@ const Register = () => {
 		if (!selectedOption) console.log("No chain selected");
 		const web3 = new Web3(selectedOption?.rpc || chainConfigs[0]?.rpc);
 		const account = web3.eth.accounts.create();
-		setWallet(account);
-		localStorage.setItem("walletAddress", account?.address);
-		Cookies.set("walletAddress", account?.address);
+		// setWallet(account);
+		// localStorage.setItem("walletAddress", account?.address);
+		// Cookies.set("walletAddress", account?.address);
 
 		const pass = await hashPassword(userDetails?.password);
 
@@ -104,7 +100,7 @@ const Register = () => {
 			recoveryPhrase: recoveryPhrase,
 			userWallet: [
 				{ account: account.address, privateKey: account.privateKey },
-			],	
+			],
 		});
 		localStorage.setItem(`firstLogin_${userDetails?.email}`, "true");
 		localStorage.setItem("chainId", chainConfigs[0]?.chainId);

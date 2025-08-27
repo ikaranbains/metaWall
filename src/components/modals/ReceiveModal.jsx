@@ -4,7 +4,8 @@ import { useState } from "react";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "motion/react";
-import { useWallet } from "../../context/WalletContext";
+import ModalHeader from "../common/ModalHeader";
+import { useAccounts } from "../../context/AccountsContext";
 
 const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 	const [copy, setCopy] = useState(false);
@@ -21,7 +22,8 @@ const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 			.catch((err) => console.log("error", err));
 		setTimeout(() => setCopy(false), 2000);
 	};
-	const {accountName} = useWallet();
+	const { selectedAccount } = useAccounts();
+	const accountName = selectedAccount?.name;
 
 	return (
 		<AnimatePresence>
@@ -42,14 +44,7 @@ const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 						transition={{ duration: 0.35, ease: "easeInOut" }}
 					>
 						{/* Header */}
-						<div className="w-full flex flex-col items-end justify-between">
-							<div className="w-[60%] mt-2 pr-2 flex items-center justify-between">
-								<h2 className="font-semibold text-xl">Receive</h2>
-								<span onClick={onClose} className="cursor-pointer">
-									<IoIosClose size={22} />
-								</span>
-							</div>
-						</div>
+						<ModalHeader title="Receive" onClose={onClose} />
 
 						{/* Body */}
 						<div className=" h-full flex flex-col items-center justify-center gap-3">

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useTxList } from "../hooks/useTxList";
-import { useWallet } from "../context/WalletContext";
 import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
-import {TbDotsVertical} from "react-icons/tb"
+import { TbDotsVertical } from "react-icons/tb";
 import { MdOutlineArrowOutward } from "react-icons/md";
-import {GiReceiveMoney} from "react-icons/gi"
+import { GiReceiveMoney } from "react-icons/gi";
+import { GoPlus } from "react-icons/go";
+import { BiRefresh } from "react-icons/bi";
+import { useAccounts } from "../context/AccountsContext";
 const ActivityBar = ({
 	setShowImportModal,
 	selectedOption,
@@ -14,7 +16,8 @@ const ActivityBar = ({
 }) => {
 	const [panelSelected, setPanelSelected] = useState(1);
 	const chainId = localStorage.getItem("chainId");
-	const { walletAddress } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const walletAddress = selectedAccount?.address;
 	const { transactions, loading, fetchTxs, hasMore, hasInitialFetch } =
 		useTxList(chainId);
 	const loaderRef = useRef(null);

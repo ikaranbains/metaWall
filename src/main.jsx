@@ -3,18 +3,18 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
-import { WalletContext } from "./context/WalletContext.jsx";
 import { NetworkContext } from "./context/NetworkContext.jsx";
 import { TxContext } from "./context/TxContext.jsx";
+import { AccountsContext } from "./context/AccountsContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-	<NetworkContext>
-		<WalletContext>
+	<AccountsContext>
+		<NetworkContext>
 			<TxContext>
 				<BrowserRouter>
 					<App />
 				</BrowserRouter>
 			</TxContext>
-		</WalletContext>
-	</NetworkContext>
+		</NetworkContext>
+	</AccountsContext>
 );

@@ -1,6 +1,6 @@
-import { useWallet } from "../context/WalletContext";
+import { useAccounts } from "../context/AccountsContext";
 import AddressBox from "./common/AddressBox";
-import {IoIosArrowDown} from "react-icons/io"
+import { IoIosArrowDown } from "react-icons/io";
 
 const FromSection = ({
 	walletAddress,
@@ -14,7 +14,8 @@ const FromSection = ({
 	setShowSelectTokenModal,
 	selectedAsset,
 }) => {
-	const { accountName } = useWallet();
+	const { selectedAccount } = useAccounts();
+	const accountName = selectedAccount?.name;
 	return (
 		<section>
 			<p className="text-lg">From</p>
