@@ -6,6 +6,15 @@ import { useWallet } from "../context/WalletContext";
 import Web3 from "web3";
 import ERC20ABI from "../ABI/TOKEN_ABI.json";
 import { getCryptoPrices } from "../utils/utilityFn";
+import ReceiveModal from "./modals/ReceiveModal";
+import ImportTokensModal from "./modals/ImportTokensModal";
+import NetworkSelector from "./NetworkSelector";
+import Accounts from "./Accounts";
+import Menu from "./Menu";
+import HomeButton from "./buttons/HomeButton";
+import { GoArrowUpRight } from "react-icons/go";
+import { MdOutlineQrCodeScanner } from "react-icons/md";
+import ActivityBar from "./ActivityBar";
 
 const Home = () => {
 	const navigate = useNavigate();

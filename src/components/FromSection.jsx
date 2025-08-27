@@ -1,4 +1,6 @@
 import { useWallet } from "../context/WalletContext";
+import AddressBox from "./common/AddressBox";
+import {IoIosArrowDown} from "react-icons/io"
 
 const FromSection = ({
 	walletAddress,
@@ -13,7 +15,6 @@ const FromSection = ({
 	selectedAsset,
 }) => {
 	const { accountName } = useWallet();
-	console.log(selectedAsset)
 	return (
 		<section>
 			<p className="text-lg">From</p>

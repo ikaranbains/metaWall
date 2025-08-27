@@ -1,4 +1,5 @@
-
+import { AnimatePresence, motion } from "framer-motion";
+import { IoIosClose } from "react-icons/io";
 const SelectTokenModal = ({
 	isOpen,
 	onClose,

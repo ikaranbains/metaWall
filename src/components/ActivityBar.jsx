@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useTxList } from "../hooks/useTxList";
 import { useWallet } from "../context/WalletContext";
 import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
-
+import {TbDotsVertical} from "react-icons/tb"
+import { MdOutlineArrowOutward } from "react-icons/md";
+import {GiReceiveMoney} from "react-icons/gi"
 const ActivityBar = ({
 	setShowImportModal,
 	selectedOption,
@@ -21,13 +23,6 @@ const ActivityBar = ({
 	const menuRef = useRef(null);
 	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || [];
 	const chain = selectedOption?.chainId;
-
-	console.log("tokens list from activity ------------------------", tokensList);
-	console.log("chainId from activity ------------------------", chainId);
-	console.log(
-		"selectedOption from activity ------------------------",
-		selectedOption
-	);
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {

@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { chainConfigs } from "../utils/constants";
+import Select from "react-select";
 
 const NetworkSelector = ({ selectedOption, handleChange }) => {
 	const dropdownRef = useRef(null);
