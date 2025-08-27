@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTxList } from "../hooks/useTxList";
 import { useWallet } from "../context/WalletContext";
-import { TbDotsVertical } from "react-icons/tb";
-import { GoPlus } from "react-icons/go";
-import { BiRefresh } from "react-icons/bi";
-import { MdOutlineArrowOutward } from "react-icons/md";
-import { GiReceiveMoney } from "react-icons/gi";
 import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
 
 const ActivityBar = ({
@@ -16,29 +11,32 @@ const ActivityBar = ({
 	refreshing,
 }) => {
 	const [panelSelected, setPanelSelected] = useState(1);
+	const chainId = localStorage.getItem("chainId");
 	const { walletAddress } = useWallet();
 	const { transactions, loading, fetchTxs, hasMore, hasInitialFetch } =
-		useTxList();
+		useTxList(chainId);
 	const loaderRef = useRef(null);
-	const chainId = localStorage.getItem("chainId");
+
 	const [showMenu, setShowMenu] = useState(false);
 	const menuRef = useRef(null);
 	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || [];
 	const chain = selectedOption?.chainId;
 
-	// console.log(tokensList);
+	console.log("tokens list from activity ------------------------", tokensList);
+	console.log("chainId from activity ------------------------", chainId);
+	console.log(
+		"selectedOption from activity ------------------------",
+		selectedOption
+	);
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
-			// ✅ Close if clicked outside the menuRef element
 			if (menuRef.current && !menuRef.current.contains(event.target)) {
 				setShowMenu(false);
 			}
 		};
-
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => {
-			// ✅ cleanup on unmount
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, [menuRef]);
@@ -168,7 +166,7 @@ const ActivityBar = ({
 											<span className="inline-flex relative w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
 												{token?.symbol?.slice(0, 1).toUpperCase()}
 												<span className="w-4 h-4 absolute -bottom-1 -right-1 rounded-full bg-zinc-100 text-[.7rem] flex items-center justify-center font-thin">
-													{chain === 80002 ? "P" : "S"}
+													{selectedOption?.name?.slice(0, 1).toUpperCase()}
 												</span>
 											</span>
 											<div className="flex flex-col justify-center ml-2">
@@ -225,7 +223,7 @@ const ActivityBar = ({
 								<div className="flex flex-col gap-3">
 									{txs.map((tx, idx) => (
 										<div
-											key={tx.hash}
+											key={idx}
 											className="pb-4 p-3 flex items-center justify-between border-b border-gray-200 last:border-b-0"
 										>
 											<div className="flex gap-3">
@@ -237,7 +235,7 @@ const ActivityBar = ({
 														<GiReceiveMoney size={22} />
 													)}
 													<span className="w-5 h-5 absolute -bottom-1.5 -right-1.5 rounded-full bg-black text-white text-[.7rem] flex items-center justify-center font-thin">
-														{chain === 80002 ? "P" : "S"}
+														{selectedOption?.name?.slice(0, 1).toUpperCase()}
 													</span>
 												</span>
 												<div className="flex justify-center flex-col">
@@ -265,7 +263,7 @@ const ActivityBar = ({
 														  )
 														: formatNativeAmount(
 																tx.value,
-																chainId === "80002" ? "POL" : "SepoliaETH"
+																selectedOption?.nativeCurrency?.symbol
 														  )}
 												</div>
 											</div>

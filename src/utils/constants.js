@@ -29,4 +29,18 @@ export const chainConfigs = [
 			decimals: 18,
 		},
 	},
+	{
+		value: "binance",
+		label: "BNB Smart Chain",
+		name: "Binance",
+		chainId: 97,
+		network: "binance",
+		rpc: "https://bsc-testnet.infura.io/v3/4213210e52fd4c4bba5138978d5966cf",
+		blockExplorerUrls: ["https://testnet.bscscan.com"],
+		nativeCurrency: {
+			name: "TBNB",
+			symbol: "TBNB",
+			decimals: 18,
+		},
+	},
 ];

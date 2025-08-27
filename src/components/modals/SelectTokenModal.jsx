@@ -1,5 +1,3 @@
-import { IoIosClose } from "react-icons/io";
-import { motion, AnimatePresence } from "motion/react";
 
 const SelectTokenModal = ({
 	isOpen,
@@ -71,7 +69,9 @@ const SelectTokenModal = ({
 																<span className="inline-flex relative w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
 																	{asset?.symbol?.slice(0, 1).toUpperCase()}
 																	<span className="w-4 h-4 absolute -bottom-1 -right-1 rounded-full bg-zinc-100 text-[.7rem] flex items-center justify-center font-thin">
-																		{chainId === 80002 ? "P" : "S"}
+																		{selectedOption?.name
+																			.slice(0, 1)
+																			.toUpperCase()}
 																	</span>
 																</span>
 																<div className="flex flex-col justify-center ml-2">

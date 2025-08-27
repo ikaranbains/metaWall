@@ -1,4 +1,4 @@
-import React, {
+import {
 	createContext,
 	useCallback,
 	useContext,
@@ -11,7 +11,17 @@ import Web3 from "web3";
 export const NetworkDataContext = createContext();
 
 export const NetworkContext = ({ children }) => {
-	const [selectedOption, setSelectedOption] = useState(chainConfigs[0]);
+	const [selectedOption, setSelectedOption] = useState(() => {
+		const chainId = localStorage.getItem("chainId");
+		if (chainId) {
+			const chain = chainConfigs.find(
+				(item) => item.chainId === Number(chainId)
+			);
+			if (chain) return chain;
+		}
+		return chainConfigs[0];
+	});
+	
 	const [balance, setBalance] = useState("0");
 	const [web3Provider, setWeb3Provider] = useState(null);
 	const walletAddress = localStorage.getItem("walletAddress");
@@ -78,9 +88,8 @@ export const NetworkContext = ({ children }) => {
 		const cached = localStorage.getItem(key);
 		if (cached) {
 			setBalance(cached);
-		
 		}
-	
+
 		(async () => {
 			try {
 				const balanceWei = await web3Provider.eth.getBalance(walletAddress);

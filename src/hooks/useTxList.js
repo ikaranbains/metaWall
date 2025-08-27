@@ -4,7 +4,7 @@ import { useWallet } from "../context/WalletContext";
 
 const VITE_ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
 
-export const useTxList = (pageSize = 20) => {
+export const useTxList = (chainId, pageSize = 20) => {
 	const [transactions, setTransactions] = useState([]);
 	const [page, setPage] = useState(1);
 	const [loading, setLoading] = useState(false);
@@ -101,7 +101,7 @@ export const useTxList = (pageSize = 20) => {
 		setPage(1);
 		setHasMore(true);
 		setHasInitialFetch(false);
-	}, [walletAddress]);
+	}, [walletAddress, chainId]);
 
 	return { transactions, loading, fetchTxs, hasMore, hasInitialFetch };
 };

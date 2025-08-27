@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import NetworkSelector from "./NetworkSelector";
-import { GoArrowUpRight } from "react-icons/go";
-import { MdOutlineQrCodeScanner } from "react-icons/md";
-import Menu from "./Menu";
-import Accounts from "./Accounts";
 import { useNetwork } from "../context/NetworkContext";
-import ActivityBar from "./ActivityBar";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
-import ReceiveModal from "./modals/ReceiveModal";
-import HomeButton from "./buttons/HomeButton";
-import ImportTokensModal from "./modals/ImportTokensModal";
 import Web3 from "web3";
 import ERC20ABI from "../ABI/TOKEN_ABI.json";
 import { getCryptoPrices } from "../utils/utilityFn";
@@ -26,10 +17,10 @@ const Home = () => {
 	const [disabled, setDisabled] = useState(true);
 	const [showTokenDetails, setShowTokenDetails] = useState(false);
 	const [step2, setStep2] = useState(false);
-	// const [isImported, setIsImported] = useState(false);
 	const [tokensList, setTokensList] = useState({
 		11155111: [],
 		80002: [],
+		97: [],
 	});
 	const web3 = new Web3(selectedOption?.rpc);
 	const chainId = selectedOption?.chainId;
@@ -81,6 +72,7 @@ const Home = () => {
 		setDisabled(true);
 		setShowTokenDetails(false);
 		setStep2(false);
+		setTokenAddress("");
 		// setIsImported(true);
 	};
 

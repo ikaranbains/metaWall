@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import Select from "react-select";
 import { chainConfigs } from "../utils/constants";
 
 const NetworkSelector = ({ selectedOption, handleChange }) => {
@@ -19,7 +18,7 @@ const NetworkSelector = ({ selectedOption, handleChange }) => {
 			minHeight: "25px",
 			height: "25px",
 			borderRadius: "0.5rem",
-			width: "150px", // optional fixed width
+			width: "160px", // optional fixed width
 			padding: "0 0",
 		}),
 		valueContainer: (base) => ({
@@ -61,7 +60,7 @@ const NetworkSelector = ({ selectedOption, handleChange }) => {
 			borderRadius: "0.5rem",
 			marginTop: "0.5rem",
 			boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-			width: "170px",
+			width: "180px",
 			position: "absolute",
 			left: -9, // ✅ match control
 		}),
@@ -88,7 +87,7 @@ const NetworkSelector = ({ selectedOption, handleChange }) => {
 			{/* Selector */}
 			<div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
 				<Select
-					value={selectedOption}
+					value={chainConfigs.find(c => c.chainId === selectedOption?.chainId) || null}
 					onChange={handleChange}
 					options={chainConfigs}
 					styles={customStyles}
