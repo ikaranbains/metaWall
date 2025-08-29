@@ -8,21 +8,40 @@ import AccountStrip from "./common/AccountStrip";
 import EditAccountNameModal from "./modals/EditAccountNameModal";
 import toast from "react-hot-toast";
 import { useAccounts } from "../context/AccountsContext";
+import { useUpdateAccountName } from "../hooks/useUpdateAccountName";
 
 const AccountsPage = () => {
 	const navigate = useNavigate();
-	const { selectedAccount } = useAccounts();
+	const { selectedAccount, setSelectedAccount } = useAccounts();
 	const accountName = selectedAccount?.name;
 	const walletAddress = selectedAccount?.address;
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [disabled, setDisabled] = useState(true);
 	const [accountNameInput, setAccountNameInput] = useState("");
 
+	const { mutate: editAccountName } = useUpdateAccountName();
 	const handleAccountName = () => {
-		// setAccountName(accountNameInput.trim());
-		setShowEditModal(false);
-		toast.success("Account name updated successfully");
-		setAccountNameInput("");
+		editAccountName(
+			{
+				accountAddress: walletAddress,
+				newName: accountNameInput.trim(),
+			},
+			{
+				onSuccess: (_, variables) => {
+					if (variables?.accountAddress === selectedAccount?.address)
+						setSelectedAccount({
+							...selectedAccount,
+							name: variables?.newName,
+						});
+					toast.success("Account name updated!!");
+					setShowEditModal(false);
+					setAccountNameInput("");
+				},
+				onError: (err) => {
+					toast.error(`❌ Failed to update: ${err.message}`);
+				},
+			}
+		);
 	};
 
 	useEffect(() => {

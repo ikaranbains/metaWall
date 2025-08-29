@@ -1,20 +1,21 @@
-import { useEffect, useState } from "react";
 import { getDataById } from "../utils/idb";
+import { useQuery } from "@tanstack/react-query";
 
-const useUser = () => {
-	const [userData, setUserData] = useState(null);
+export const useUser = () => {
 	const id = localStorage.getItem("loggedUserId");
-	if (!id) return { error: "id not found" };
-	useEffect(() => {
-		const getUser = async (id) => {
-			const user = await getDataById(id);
-			setUserData(user);
-		};
 
-		if (id && !userData) getUser(id);
-	}, []);
+	// useEffect(() => {
+	// 	const getUser = async (id) => {
+	// 		const user = await getDataById(id);
+	// 		setUserData(user);
+	// 	};
 
-	return { userData };
+	// 	if (id && !userData) getUser(id);
+	// }, []);
+
+	return useQuery({
+		queryKey: ["user", id],
+		queryFn: () => getDataById(id),
+		enabled: !!id,
+	});
 };
-
-export default useUser;

@@ -16,10 +16,11 @@ import { MdOutlineQrCodeScanner } from "react-icons/md";
 import ActivityBar from "./ActivityBar";
 import ManageAccountsModal from "./modals/ManageAccountsModal";
 import { useAccounts } from "../context/AccountsContext";
+import { useAddEthAccount } from "../hooks/useAddEthAccount";
 
 const Home = () => {
 	const navigate = useNavigate();
-	const { selectedAccount } = useAccounts();
+	const { selectedAccount, setSelectedAccount } = useAccounts();
 	const walletAddress = selectedAccount?.address;
 	const accountName = selectedAccount?.name;
 	const { selectedOption, setSelectedOption, balance } = useNetwork();
@@ -30,6 +31,11 @@ const Home = () => {
 	const [disabled, setDisabled] = useState(true);
 	const [showTokenDetails, setShowTokenDetails] = useState(false);
 	const [step2, setStep2] = useState(false);
+	const [accStep2, setAccStep2] = useState(false);
+	const [accStep3, setAccStep3] = useState(false);
+	const [newAccNameInpETH, setNewAccNameInpETH] = useState("");
+	const [newAccNameInpSOL, setNewAccNameInpSOL] = useState("");
+	const [isEthereum, setIsEthereum] = useState(false);
 	const [tokensList, setTokensList] = useState({
 		11155111: [],
 		80002: [],
@@ -38,6 +44,7 @@ const Home = () => {
 	const web3 = new Web3(selectedOption?.rpc);
 	const chainId = selectedOption?.chainId;
 	let key = `cachedBalance_${chainId}_${walletAddress}`;
+	const key2 = `${chainId}_${walletAddress}`;
 	const cachedBalance = localStorage.getItem(key);
 	const [refreshing, setRefreshing] = useState(false);
 
@@ -135,7 +142,33 @@ const Home = () => {
 		}
 	};
 
-	//add native currency in tokens list only on top only once
+	const handleNewAccNameChangeETH = (e) => {
+		setNewAccNameInpETH(e.target.value);
+	};
+	const handleNewAccNameChangeSOL = (e) => {
+		setNewAccNameInpSOL(e.target.value);
+	};
+
+	const { mutate: addEthAccount } = useAddEthAccount(web3);
+
+	const handleAddNewAccETH = () => {
+		addEthAccount(newAccNameInpETH, {
+			onSuccess: () => {
+				setNewAccNameInpETH("");
+				toast.success("New Account Created Successfully!!");
+				setAccStep2(false);
+				setAccStep3(false);
+			},
+		});
+	};
+
+	const handleAddNewAccSOL = () => {
+		alert("new sol acc created!!");
+		console.log(newAccNameInpSOL);
+		setNewAccNameInpSOL("");
+	};
+
+	// note: add native currency in tokens list
 	useEffect(() => {
 		const chain = selectedOption?.chainId;
 		if (!chain) return;
@@ -144,13 +177,11 @@ const Home = () => {
 			const { price, message } = await getCryptoPrices(
 				selectedOption?.nativeCurrency?.symbol
 			);
-			if (message) {
-				console.log("message-----", message);
-			}
-			// console.log("native price", price);
 
 			setTokensList((prev) => {
-				if (prev[chain].length > 0) return prev;
+				const currentList = prev[key2] || [];
+				// if (prev[chain].length > 0) return prev;
+				if (currentList.some((t) => t.tokenType === "native")) return prev;
 
 				const nativeToken = {
 					name: selectedOption?.nativeCurrency?.name,
@@ -164,22 +195,20 @@ const Home = () => {
 
 				const updated = {
 					...prev,
-					[chain]: [nativeToken, ...prev[chain]],
+					[key2]: [nativeToken, ...currentList],
 				};
 
 				localStorage.setItem("tokensList", JSON.stringify(updated));
 				return updated;
 			});
-
-			// console.log(price);
 		};
 
 		handleNativePrice();
-	}, [selectedOption, balance]);
+	}, [selectedOption, balance, walletAddress]);
 
 	useEffect(() => {
 		const fetchTokenDetails = async () => {
-			const chain = selectedOption?.chainId;
+			// const chain = selectedOption?.chainId;
 
 			if (!tokenAddress) {
 				setDisabled(true);
@@ -196,56 +225,48 @@ const Home = () => {
 					return toast.error("Invalid token address");
 				}
 
-				const isAlreadyAdded = tokensList[chain]?.find(
-					(item) => item.address === tokenAddress
-				);
+				const newToken = {
+					...res,
+					address: tokenAddress,
+					decimals: Number(res.decimals),
+					formattedBalance: Number(res.formattedBalance),
+					price: res.price ? Number(res.price) : null,
+					tokenType: "custom",
+				};
+				// console.log("duplicate token found ---------------------");
+				// update existing token details
+				setTokensList((prev) => {
+					const current = prev[key] || [];
 
-				if (isAlreadyAdded) {
-					console.log("duplicate token found ---------------------");
-					// update existing token details
-					setTokensList((prev) => {
-						const updated = {
-							...prev,
-							[chain]: prev[chain].map((item) => {
-								return item.address === tokenAddress
-									? {
-											...item,
-											formattedBalance: Number(res.formattedBalance),
-											price: res.price ? Number(res.price) : null,
-									  }
-									: item;
-							}),
-						};
+					const existing = current.find(
+						(item) => item.address === tokenAddress
+					);
 
-						// console.log("updated------------------", updated);
-						localStorage.setItem("tokensList", JSON.stringify(updated));
-						return updated;
-					});
-					setShowTokenDetails(true);
-					setDisabled(false);
-				} else {
-					const token = {
-						...res,
-						address: tokenAddress,
-						decimals: Number(res.decimals),
-						formattedBalance: Number(res.formattedBalance),
-						price: res.price ? Number(res.price) : null,
-						tokenType: "custom",
-					};
+					let updatedList;
 
-					setTokensList((prev) => {
-						const updated = {
-							...prev,
-							[chain]: [...prev[chain], token],
-						};
+					if (existingToken) {
+						console.log("duplicate token found ---------------------");
+						updatedList = current.map((item) =>
+							item.address === tokenAddress
+								? {
+										...item,
+										formattedBalance: Number(res.formattedBalance),
+										price: res.price ? Number(res.price) : null,
+								  }
+								: item
+						);
+					} else {
+						updatedList = [...current, newToken];
+					}
 
-						localStorage.setItem("tokensList", JSON.stringify(updated));
+					const updated = { ...prev, [key2]: updatedList };
 
-						return updated;
-					});
-					setShowTokenDetails(true);
-					setDisabled(false);
-				}
+					console.log("updated------------------", updated);
+					localStorage.setItem("tokensList", JSON.stringify(updated));
+					return updated;
+				});
+				setShowTokenDetails(true);
+				setDisabled(false);
 			}
 		};
 
@@ -287,9 +308,27 @@ const Home = () => {
 			{showManageAccountModal && (
 				<ManageAccountsModal
 					isOpen={showManageAccountModal}
-					onClose={() => setShowManageAccountModal(false)}
+					onClose={() => {
+						setShowManageAccountModal(false);
+						setAccStep2(false);
+						setAccStep3(false);
+					}}
 					walletAddress={walletAddress}
 					accountName={accountName}
+					accStep2={accStep2}
+					setAccStep2={setAccStep2}
+					accStep3={accStep3}
+					setAccStep3={setAccStep3}
+					newAccNameInpETH={newAccNameInpETH}
+					newAccNameInpSOL={newAccNameInpSOL}
+					handleNewAccNameChangeETH={handleNewAccNameChangeETH}
+					handleNewAccNameChangeSOL={handleNewAccNameChangeSOL}
+					handleAddNewAccETH={handleAddNewAccETH}
+					handleAddNewAccSOL={handleAddNewAccSOL}
+					isEthereum={isEthereum}
+					setIsEthereum={setIsEthereum}
+					selectedAccount={selectedAccount}
+					setSelectedAccount={setSelectedAccount}
 				/>
 			)}
 

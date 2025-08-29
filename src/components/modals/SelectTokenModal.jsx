@@ -21,7 +21,7 @@ const SelectTokenModal = ({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					transition={{ duration: 0.25 }}
+					transition={{ duration: 0.15 }}
 				>
 					{/* Modal container */}
 					<motion.div
@@ -29,7 +29,7 @@ const SelectTokenModal = ({
 						initial={{ opacity: 0, scale: 0.85, y: -40 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.9, y: 40 }}
-						transition={{ duration: 0.35, ease: "easeInOut" }}
+						transition={{ duration: 0.15, ease: "easeInOut" }}
 					>
 						<div className="w-full min-h-full">
 							<ModalHeader title="Select asset to send" onClose={onClose} />

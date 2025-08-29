@@ -88,9 +88,6 @@ const Register = () => {
 		if (!selectedOption) console.log("No chain selected");
 		const web3 = new Web3(selectedOption?.rpc || chainConfigs[0]?.rpc);
 		const account = web3.eth.accounts.create();
-		// setWallet(account);
-		// localStorage.setItem("walletAddress", account?.address);
-		// Cookies.set("walletAddress", account?.address);
 
 		const pass = await hashPassword(userDetails?.password);
 

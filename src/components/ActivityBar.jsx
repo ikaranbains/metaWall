@@ -24,7 +24,9 @@ const ActivityBar = ({
 
 	const [showMenu, setShowMenu] = useState(false);
 	const menuRef = useRef(null);
+
 	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || [];
+
 	const chain = selectedOption?.chainId;
 
 	useEffect(() => {
@@ -152,8 +154,8 @@ const ActivityBar = ({
 						<p className="mt-10 text-gray-500 text-sm select-none animate-pulse">
 							Refreshing list...
 						</p>
-					) : tokensList[chain]?.length ? (
-						tokensList[chain]?.map((token, index) => {
+					) : tokensList[key2]?.length ? (
+						tokensList[key2]?.map((token, index) => {
 							return (
 								<div
 									key={index}

@@ -20,7 +20,7 @@ const EditAccountNameModal = ({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					transition={{ duration: 0.25 }}
+					transition={{ duration: 0.15 }}
 				>
 					{/* Modal container */}
 					<motion.div
@@ -28,7 +28,7 @@ const EditAccountNameModal = ({
 						initial={{ opacity: 0, scale: 0.85, y: -40 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.9, y: 40 }}
-						transition={{ duration: 0.35, ease: "easeInOut" }}
+						transition={{ duration: 0.15, ease: "easeInOut" }}
 					>
 						<div className="w-full min-h-full mb-4">
 							<ModalHeader title="Edit account name" onClose={onClose} />
@@ -36,6 +36,7 @@ const EditAccountNameModal = ({
 							<div className="w-full my-4 px-3 flex flex-col gap-2">
 								<p className="font-medium">Name</p>
 								<input
+									autoComplete="off"
 									value={accountNameInput}
 									onChange={(e) => setAccountNameInput(e.target.value)}
 									type="text"
@@ -48,7 +49,7 @@ const EditAccountNameModal = ({
 
 						<div className="w-full px-5 mb-3">
 							<button
-								onClick={() => handleAccountName()}
+								onClick={handleAccountName}
 								className={`text-white w-full py-1.5 mt-5 text-lg rounded-lg ${
 									!disabled
 										? "bg-black hover:bg-zinc-900 cursor-pointer"

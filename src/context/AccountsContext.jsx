@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import useUser from "../hooks/useUser";
+import { useUser } from "../hooks/useUser";
 
 export const AccountsDataContext = createContext();
 export const AccountsContext = ({ children }) => {
-	const { userData } = useUser();
+	const { data: userData } = useUser();
 	const [accountsList, setAccountsList] = useState([]);
 	// console.log(accountsList);
-	const [selectedAccount, setSelectedAccount] = useState(() => {
+	const [selectedAccount, setSelectedAccountState] = useState(() => {
 		try {
 			const stored = localStorage.getItem("selectedAccount");
 			return stored ? JSON.parse(stored) : null;
@@ -14,6 +14,11 @@ export const AccountsContext = ({ children }) => {
 			return null;
 		}
 	});
+
+	const setSelectedAccount = (account) => {
+		setSelectedAccountState(account);
+		localStorage.setItem("selectedAccount", JSON.stringify(account));
+	};
 
 	useEffect(() => {
 		const selected = JSON.parse(localStorage.getItem("selectedAccount"));

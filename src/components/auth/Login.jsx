@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bcrypt from "bcryptjs";
-import { getDataByEmail } from "../../utils/idb";
+import { getDataByEmail, updateData } from "../../utils/idb";
 import toast from "react-hot-toast";
 import { loginValidation } from "../../utils/validation";
 import {
@@ -109,11 +109,26 @@ const Login = () => {
 
 		// console.log("user-------------", user);
 		localStorage.setItem("loggedUserId", user?.id);
+		// await updateData
 		// console.log("user ------------",user)
-		localStorage.setItem("selectedAccount", JSON.stringify({
-			name: "Account 1",
-			address: user?.userWallet[0]?.account,
-		}));
+
+		const updatedWallet = user?.userWallet.map((w, i) => {
+			if (i === 0) {
+				return { ...w, name: w.name || "Account 1" };
+			}
+
+			return w;
+		});
+
+		await updateData({ userWallet: updatedWallet }, user?.id);
+
+		localStorage.setItem(
+			"selectedAccount",
+			JSON.stringify({
+				name: user?.userWallet[0]?.name,
+				address: user?.userWallet[0]?.account,
+			})
+		);
 
 		// Mark first login as completed
 		localStorage.setItem(`firstLogin_${loginDetails?.email}`, "false");

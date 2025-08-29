@@ -33,7 +33,7 @@ const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					transition={{ duration: 0.25 }}
+					transition={{ duration: 0.15 }}
 				>
 					{/* Modal container */}
 					<motion.div
@@ -41,7 +41,7 @@ const ReceiveModal = ({ walletAddress, onClose, isOpen }) => {
 						initial={{ opacity: 0, scale: 0.85, y: -40 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.9, y: 40 }}
-						transition={{ duration: 0.35, ease: "easeInOut" }}
+						transition={{ duration: 0.15, ease: "easeInOut" }}
 					>
 						{/* Header */}
 						<ModalHeader title="Receive" onClose={onClose} />

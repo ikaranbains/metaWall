@@ -25,7 +25,7 @@ const ImportTokensModal = ({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					transition={{ duration: 0.25 }}
+					transition={{ duration: 0.15 }}
 				>
 					{/* Modal container */}
 					<motion.div
@@ -33,7 +33,7 @@ const ImportTokensModal = ({
 						initial={{ opacity: 0, scale: 0.85, y: -40 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.9, y: 40 }}
-						transition={{ duration: 0.35, ease: "easeInOut" }}
+						transition={{ duration: 0.15, ease: "easeInOut" }}
 					>
 						<div className="w-full min-h-full mb-4">
 							<ModalHeader title="Import Tokens" onClose={onClose} />
@@ -98,12 +98,6 @@ const ImportTokensModal = ({
 												<div className="w-full">
 													<p>Token Symbol</p>
 													<div className="w-full h-13 rounded-xl mt-2 flex items-center border-2 border-gray-300 overflow-hidden">
-														{/* <input
-														readOnly
-														value="wDione"
-														type="text"
-														className="outline-none border-none  p-3 w-full"
-													/> */}
 														<p className="px-3">
 															{tokensList &&
 																tokensList[chain].find(

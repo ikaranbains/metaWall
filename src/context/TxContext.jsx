@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import useUser from "../hooks/useUser";
+import {useUser} from "../hooks/useUser";
 import { useNetwork } from "./NetworkContext";
 
 const TxDataContext = createContext();
@@ -8,7 +8,7 @@ export const TxContext = ({ children }) => {
 	const { selectedOption } = useNetwork();
 	const [addressInput, setAddressInput] = useState("");
 	const [amtInput, setAmtInput] = useState("");
-	const { userData } = useUser();
+	const { data: userData } = useUser();
 	const [privateKey, setPrivateKey] = useState(null);
 	const [tokensList] = useState(() => {
 		try {
@@ -20,9 +20,7 @@ export const TxContext = ({ children }) => {
 
 	const [chainId, setChainId] = useState(localStorage.getItem("chainId"));
 	// console.log("tx context --------- chain ----------", chainId);
-	const [selectedAsset, setSelectedAsset] = useState(
-		tokensList[chainId][0] || {}
-	);
+	const [selectedAsset, setSelectedAsset] = useState(null);
 	// console.log("the selected -------------------", selectedAsset);
 
 	// note: setting private key from indexDB data
@@ -41,10 +39,10 @@ export const TxContext = ({ children }) => {
 	// note: setting selected asset
 	useEffect(() => {
 		if (tokensList && chainId && tokensList[chainId]?.length > 0) {
-			const firstAsset = tokensList[chainId][0];
+			const firstAsset = tokensList[chainId][0]; // ✅ bracket notation
 			setSelectedAsset(firstAsset);
 		} else {
-			setSelectedAsset(tokensList[0][0]);
+			setSelectedAsset(null); // nothing available
 		}
 	}, [tokensList, chainId, selectedOption]);
 
