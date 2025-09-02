@@ -11,6 +11,7 @@
 		"prepare": "husky"
 	},
 	"dependencies": {
+		"@solana/web3.js": "^1.98.4",
 		"@tailwindcss/vite": "^4.1.11",
 		"@tanstack/react-query": "^5.85.5",
 		"axios": "^1.11.0",

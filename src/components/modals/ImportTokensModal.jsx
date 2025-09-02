@@ -15,6 +15,7 @@ const ImportTokensModal = ({
 	setStep2,
 	step2,
 	handleImportToken,
+	key2
 }) => {
 	const chain = selectedOption?.chainId;
 	return (
@@ -46,7 +47,7 @@ const ImportTokensModal = ({
 									<div className="w-full flex items-center gap-2 pl-6 mt-4">
 										<span className="inline-flex w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
 											{tokensList &&
-												tokensList[chain]
+												tokensList[key2]
 													?.find((item) => item.address === tokenAddress)
 													?.name.slice(0, 1)
 													.toUpperCase()}
@@ -54,13 +55,13 @@ const ImportTokensModal = ({
 										<div className="flex flex-col justify-center ml-2">
 											<span>
 												{tokensList &&
-													tokensList[chain]?.find(
+													tokensList[key2]?.find(
 														(item) => item.address === tokenAddress
 													)?.name}
 											</span>
 											<p className="text-gray-500 text-sm">
 												{tokensList &&
-													tokensList[chain]?.find(
+													tokensList[key2]?.find(
 														(item) => item.address === tokenAddress
 													)?.decimals}
 											</p>
@@ -100,9 +101,9 @@ const ImportTokensModal = ({
 													<div className="w-full h-13 rounded-xl mt-2 flex items-center border-2 border-gray-300 overflow-hidden">
 														<p className="px-3">
 															{tokensList &&
-																tokensList[chain].find(
-																	(item) => item.address === tokenAddress
-																).symbol}
+																tokensList[key2].find(
+																	(item) => item?.address === tokenAddress
+																)?.symbol}
 														</p>
 													</div>
 												</div>
@@ -112,7 +113,7 @@ const ImportTokensModal = ({
 													<div className="w-full h-13 rounded-xl mt-2 flex items-center cursor-not-allowed border-2 border-gray-300 focus-within:border-black overflow-hidden">
 														<p className="text-gray-400  p-3 w-full">
 															{tokensList &&
-																tokensList[chain].find(
+																tokensList[key2].find(
 																	(item) => item.address === tokenAddress
 																).decimals}
 														</p>

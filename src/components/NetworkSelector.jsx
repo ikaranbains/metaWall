@@ -1,8 +1,8 @@
 import { useRef } from "react";
-import { chainConfigs } from "../utils/constants";
+import { evmConfigs, solConfigs } from "../utils/constants";
 import Select from "react-select";
 
-const NetworkSelector = ({ selectedOption, handleChange }) => {
+const NetworkSelector = ({ selectedOption, handleChange, selectedAccount }) => {
 	const dropdownRef = useRef(null);
 
 	const customStyles = {
@@ -87,17 +87,34 @@ const NetworkSelector = ({ selectedOption, handleChange }) => {
 		<div ref={dropdownRef} className="relative inline-block text-left">
 			{/* Selector */}
 			<div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
-				<Select
-					value={chainConfigs.find(c => c.chainId === selectedOption?.chainId) || null}
-					onChange={handleChange}
-					options={chainConfigs}
-					styles={customStyles}
-					className="text-sm"
-					isClearable={false}
-					isDisabled={false}
-					isSearchable={false}
-					placeholder="Select Chain"
-				/>
+				{selectedAccount && selectedAccount?.type === "evm" ? (
+					<Select
+						value={
+							evmConfigs.find((c) => c.chainId === selectedOption?.chainId) ||
+							null
+						}
+						onChange={handleChange}
+						options={evmConfigs}
+						styles={customStyles}
+						className="text-sm"
+						isClearable={false}
+						isDisabled={false}
+						isSearchable={false}
+						placeholder="Select Chain"
+					/>
+				) : (
+					<Select
+						value={solConfigs[0]}
+						onChange={handleChange}
+						options={solConfigs}
+						styles={customStyles}
+						className="text-sm"
+						isClearable={false}
+						isDisabled={false}
+						isSearchable={false}
+						placeholder="Select Cluster"
+					/>
+				)}
 			</div>
 		</div>
 	);

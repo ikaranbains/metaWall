@@ -31,6 +31,8 @@ export const AccountsContext = ({ children }) => {
 		}
 	}, [userData]);
 
+	// console.log("in context ------------", selectedAccount);
+
 	return (
 		<AccountsDataContext.Provider
 			value={{

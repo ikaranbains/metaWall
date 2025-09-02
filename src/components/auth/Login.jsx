@@ -19,6 +19,7 @@ import AuthForm from "../common/AuthForm";
 import StepWrapper from "../common/StepWrapper";
 import Cookies from "js-cookie";
 import RecoveryModal from "../RecoveryModal";
+import { evmConfigs } from "../../utils/constants";
 
 const Login = () => {
 	const [loginDetails, setloginDetails] = useState({
@@ -109,12 +110,13 @@ const Login = () => {
 
 		// console.log("user-------------", user);
 		localStorage.setItem("loggedUserId", user?.id);
+		localStorage.setItem("chainId", evmConfigs[0]?.chainId);
 		// await updateData
 		// console.log("user ------------",user)
 
 		const updatedWallet = user?.userWallet.map((w, i) => {
 			if (i === 0) {
-				return { ...w, name: w.name || "Account 1" };
+				return { ...w, name: w.name || "Account 1", type: "evm" };
 			}
 
 			return w;
@@ -127,6 +129,7 @@ const Login = () => {
 			JSON.stringify({
 				name: user?.userWallet[0]?.name,
 				address: user?.userWallet[0]?.account,
+				type: user?.userWallet[0]?.type,
 			})
 		);
 

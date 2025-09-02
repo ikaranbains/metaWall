@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "../context/NetworkContext";
 import { isValidWalletAddress } from "../utils/validation";
@@ -11,6 +11,7 @@ import ToSection from "./ToSection";
 import FromSection from "./FromSection";
 import SelectTokenModal from "./modals/SelectTokenModal";
 import { useAccounts } from "../context/AccountsContext";
+import { getKeys } from "../utils/utilityFn";
 
 const Send = () => {
 	const navigate = useNavigate();
@@ -26,29 +27,22 @@ const Send = () => {
 	} = useSend();
 	const [showStep2, setShowStep2] = useState(false);
 	const [disabled, setDisabled] = useState(true);
-	const { selectedOption } = useNetwork();
-	const [balance, setBalance] = useState("");
+	const { selectedOption, balance } = useNetwork();
 	const [loading, setLoading] = useState(false);
 	const [showSelectTokenModal, setShowSelectTokenModal] = useState(false);
-	const tokensList = JSON.parse(localStorage.getItem("tokensList"));
-	const chainId = localStorage.getItem("chainId");
 
-	const getCachedBalance = () => {
-		if (!chainId) return console.log("no chainid found");
-		const key = `cachedBalance_${chainId}_${walletAddress}`;
-		const localBalance = localStorage.getItem(key);
-		setBalance(localBalance);
-	};
+	const chainId = selectedOption?.chainId || null;
+	const { tokenKey } = getKeys(chainId, walletAddress);
+	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || {};
 
 	const handleNext = (e) => {
 		e.preventDefault();
 		if (!addressInput || addressInput === "")
 			return console.log("Address Input in required");
-		const isValid = isValidWalletAddress(addressInput);
+		const isValid = isValidWalletAddress(addressInput, selectedAccount?.type);
 		if (!isValid) return toast.error("Please enter valid address!!");
 		setShowStep2(true);
 		localStorage.setItem("toAddress", addressInput);
-		// e.stopPropagation();
 	};
 
 	const handleAmtChange = (e) => {
@@ -66,12 +60,12 @@ const Send = () => {
 		if (!amtInput || amtInput === "")
 			return toast.error("Amount is required!!");
 		const amt = parseFloat(amtInput);
-		const blcFloat = parseFloat(balance);
+		const blcFloat = parseFloat(balance) || 0;
 		const blnToken = parseFloat(selectedAsset?.formattedBalance || 0);
-		if (selectedAsset?.name === "POL" || selectedAsset?.name === "ETH") {
-			if (blcFloat <= amt) return toast.error("Insufficient Funds!!");
+		if (selectedAsset?.tokenType === "native") {
+			if (blcFloat < amt) return toast.error("Insufficient funds!!");
 		} else {
-			if (blnToken < amt) return toast.error("Insufficient Funds!!");
+			if (blnToken < amt) return toast.error("Insufficient token balance!!");
 		}
 		setLoading(true);
 		setTimeout(() => {
@@ -79,10 +73,6 @@ const Send = () => {
 			navigate("/review");
 		}, 1500);
 	};
-
-	useEffect(() => {
-		getCachedBalance();
-	}, []);
 
 	return (
 		<div className="w-full h-full flex items-center justify-center">
@@ -93,7 +83,7 @@ const Send = () => {
 					onClose={() => setShowSelectTokenModal(false)}
 					selectedOption={selectedOption}
 					tokensList={tokensList}
-					chainId={chainId}
+					tokenKey={tokenKey}
 					balance={balance}
 					setSelectedAsset={setSelectedAsset}
 					selectedAsset={selectedAsset}

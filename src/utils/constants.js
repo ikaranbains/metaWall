@@ -1,4 +1,4 @@
-export const chainConfigs = [
+export const evmConfigs = [
 	{
 		value: "sepolia",
 		label: "Sepolia",
@@ -42,5 +42,21 @@ export const chainConfigs = [
 			symbol: "TBNB",
 			decimals: 18,
 		},
+	},
+];
+
+export const solConfigs = [
+	{
+		value: "solana",
+		label: "Solana Devnet",
+		name: "Solana",
+		network: "devnet",
+		rpc: "https://api.devnet.solana.com",
+		nativeCurrency: {
+			name: "SOL",
+			symbol: "SOL",
+			decimals: 9,
+		},
+		blockExplorerUrls: ["https://explorer.solana.com/"]
 	},
 ];

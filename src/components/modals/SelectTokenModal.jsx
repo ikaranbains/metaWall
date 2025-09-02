@@ -6,7 +6,7 @@ const SelectTokenModal = ({
 	onClose,
 	selectedOption,
 	tokensList,
-	chainId,
+	tokenKey,
 	balance,
 	selectedAsset,
 	setSelectedAsset,
@@ -43,49 +43,55 @@ const SelectTokenModal = ({
 										<div className="border-b-2 w-full"></div>
 									</div>
 									<ul className="list-none mt-3 flex flex-col gap-2 ">
-										{tokensList[chainId].map((asset, idx) => {
-											return (
-												<li
-													onClick={() => {
-														setSelectedAsset(asset);
-														onClose();
-													}}
-													key={idx}
-												>
-													<div className="w-full flex items-center gap-2 overflow-y-scroll my-scroll">
-														{selectedAsset &&
-															asset?.symbol === selectedAsset?.symbol && (
-																<span className="w-1 h-8 bg-black rounded-lg"></span>
-															)}
-														<div className="w-full hover:bg-zinc-100 cursor-pointer py-2 flex items-center justify-between px-3">
-															<div className="flex items-center gap-1">
-																<span className="inline-flex relative w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
-																	{asset?.symbol?.slice(0, 1).toUpperCase()}
-																	<span className="w-4 h-4 absolute -bottom-1 -right-1 rounded-full bg-zinc-100 text-[.7rem] flex items-center justify-center font-thin">
-																		{selectedOption?.name
-																			.slice(0, 1)
-																			.toUpperCase()}
+										{tokensList[tokenKey].length > 0 ? (
+											tokensList[tokenKey].map((asset, idx) => {
+												return (
+													<li
+														onClick={() => {
+															setSelectedAsset(asset);
+															onClose();
+														}}
+														key={idx}
+													>
+														<div className="w-full flex items-center gap-2 overflow-y-scroll my-scroll">
+															{selectedAsset &&
+																asset?.symbol === selectedAsset?.symbol && (
+																	<span className="w-1 h-8 bg-black rounded-lg"></span>
+																)}
+															<div className="w-full hover:bg-zinc-100 cursor-pointer py-2 flex items-center justify-between px-3">
+																<div className="flex items-center gap-1">
+																	<span className="inline-flex relative w-8 h-8 items-center justify-center bg-zinc-200 rounded-full">
+																		{asset?.symbol?.slice(0, 1).toUpperCase()}
+																		<span className="w-4 h-4 absolute -bottom-1 -right-1 rounded-full bg-zinc-100 text-[.7rem] flex items-center justify-center font-thin">
+																			{selectedOption?.name
+																				.slice(0, 1)
+																				.toUpperCase()}
+																		</span>
 																	</span>
-																</span>
-																<div className="flex flex-col justify-center ml-2">
-																	<span>{asset?.name}</span>
-																	<span className="text-xs text-gray-500">
-																		{asset?.symbol}
+																	<div className="flex flex-col justify-center ml-2">
+																		<span>{asset?.name}</span>
+																		<span className="text-xs text-gray-500">
+																			{asset?.symbol}
+																		</span>
+																	</div>
+																</div>
+																<div className="flex flex-col items-end">
+																	<span className="text-lg">
+																		{asset?.formattedBalance === 0
+																			? balance
+																			: asset?.formattedBalance}
 																	</span>
 																</div>
 															</div>
-															<div className="flex flex-col items-end">
-																<span className="text-lg">
-																	{asset?.formattedBalance === 0
-																		? balance
-																		: asset?.formattedBalance}
-																</span>
-															</div>
 														</div>
-													</div>
-												</li>
-											);
-										})}
+													</li>
+												);
+											})
+										) : (
+											<p className="text-gray-400 text-sm text-center mt-5">
+												No tokens found
+											</p>
+										)}
 									</ul>
 								</div>
 							</div>

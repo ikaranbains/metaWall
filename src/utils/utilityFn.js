@@ -31,7 +31,7 @@ export async function getCryptoPrices(symbol) {
 		});
 
 		if (res.success && res.data.USD) {
-			// console.log("response in fn ---------------", res);	
+			// console.log("response in fn ---------------", res);
 			return { success: true, price: res.data.USD, message: "Price fetched" };
 		} else {
 			return {
@@ -74,3 +74,14 @@ export const formatNativeAmount = (value, symbol) => {
 
 	return `${formatter.format(num)} ${symbol}`;
 };
+
+export function getKeys(chainId, address) {
+	return {
+		balanceKey: chainId
+			? `cachedBalance_evm_${chainId}_${address}`
+			: `cachedBalance_sol_${address}`,
+		tokenKey: chainId
+			? `evm_${chainId}_${address}`
+			: `sol_${address}`,
+	};
+}

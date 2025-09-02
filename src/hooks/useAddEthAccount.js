@@ -12,6 +12,7 @@ export const useAddEthAccount = (web3) => {
 				name: accountName,
 				account: newAcc.address,
 				privateKey: newAcc.privateKey,
+				type: "evm",
 			};
 
 			const user = await getDataById(id);

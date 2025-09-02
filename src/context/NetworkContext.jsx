@@ -5,95 +5,81 @@ import {
 	useEffect,
 	useState,
 } from "react";
-import { chainConfigs } from "../utils/constants";
+import { evmConfigs, solConfigs } from "../utils/constants";
 import Web3 from "web3";
+import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import { useAccounts } from "./AccountsContext";
+import { getKeys } from "../utils/utilityFn";
 
 export const NetworkDataContext = createContext();
 
 export const NetworkContext = ({ children }) => {
 	const [selectedOption, setSelectedOption] = useState(() => {
 		const chainId = localStorage.getItem("chainId");
-		if (chainId) {
-			const chain = chainConfigs.find(
-				(item) => item.chainId === Number(chainId)
-			);
+		if (chainId && chainId !== null) {
+			const chain = evmConfigs.find((item) => item.chainId === Number(chainId));
 			if (chain) return chain;
+			return evmConfigs[0];
 		}
-		return chainConfigs[0];
+		return solConfigs[0];
 	});
 
+	const chainId = selectedOption?.chainId || null;
 	const [balance, setBalance] = useState("0");
 	const [web3Provider, setWeb3Provider] = useState(null);
 	const { selectedAccount } = useAccounts();
 	const walletAddress = selectedAccount?.address;
+	const walletType = selectedAccount?.type;
+	// console.log("wallet address in net context-----------------", walletAddress)
 
-	// restore chain on reload
+	const { balanceKey } = getKeys(chainId, walletAddress);
+
+	// note: restore chain on reload
+	// restore chain on account change
 	useEffect(() => {
-		const chainId = localStorage.getItem("chainId");
-		if (!chainId) return;
-		const chain = chainConfigs.find((item) => item.chainId === Number(chainId));
-		if (chain) {
-			setSelectedOption(chain);
-			const key = `cachedBalance_${chain.chainId}_${walletAddress}`;
-			const cached = localStorage.getItem(key);
+		if (!selectedAccount) return;
+
+		if (selectedAccount.type === "sol") {
+			setSelectedOption(solConfigs[0]); // ✅ always sol config!
+			localStorage.setItem("chainId", "null");
+			const cached = localStorage.getItem(
+				`cachedBalance_sol_${selectedAccount.address}`
+			);
 			if (cached) setBalance(cached);
+		} else if (selectedAccount.type === "evm") {
+			const chainId = localStorage.getItem("chainId");
+			const chain = evmConfigs.find((item) => item.chainId === Number(chainId));
+			if (chain) {
+				setSelectedOption(chain);
+				const cached = localStorage.getItem(
+					`cachedBalance_evm_${chain.chainId}_${selectedAccount.address}`
+				);
+				if (cached) setBalance(cached);
+			} else {
+				setSelectedOption(evmConfigs[0]); // fallback if chain not found
+			}
 		}
-	}, [walletAddress]);
+	}, [selectedAccount]);
 
-	// set web3Provider whenever chain changes
+	// note: set web3Provider whenever chain changes
 	useEffect(() => {
-		if (selectedOption?.rpc) {
-			const provider = new Web3(selectedOption.rpc);
+		if (!selectedOption) return;
+		if (selectedOption?.chainId) {
+			const provider = new Web3(selectedOption?.rpc);
 			setWeb3Provider(provider);
-			console.log("✅ Provider set for", selectedOption.label);
+			console.log("✅ Provider set for", selectedOption?.label);
+		} else {
+			setWeb3Provider(null);
+			console.log("🌞 Solana provider set:", selectedOption?.label);
 		}
 	}, [selectedOption]);
 
-	// single official getBalance fn (for manual refresh)
+	// note: single official getBalance fn (for manual refresh)
 	const getBalance = useCallback(async () => {
-		if (!walletAddress || !selectedOption?.chainId || !web3Provider) return;
-		const currentChainId = selectedOption.chainId;
+		if (!walletAddress || !selectedOption) return;
 
 		try {
-			const balanceWei = await web3Provider.eth.getBalance(walletAddress);
-			const balanceEth = web3Provider.utils.fromWei(balanceWei, "ether");
-			const formatted = parseFloat(balanceEth).toLocaleString(undefined, {
-				minimumFractionDigits: 0,
-				maximumFractionDigits: 6,
-			});
-
-			if (currentChainId === selectedOption.chainId) {
-				setBalance(formatted);
-				localStorage.setItem(
-					`cachedBalance_${currentChainId}_${walletAddress}`,
-					formatted
-				);
-				console.log(
-					`✅ Balance fetched for ${selectedOption.label} = ${formatted}`
-				);
-			} else {
-				console.log("⚠️ Ignored stale fetch for", selectedOption.label);
-			}
-		} catch (err) {
-			console.error("❌ error balance", err);
-		}
-	}, [walletAddress, selectedOption, web3Provider]);
-
-	// auto-load when chain/provider/wallet changes
-	useEffect(() => {
-		if (!walletAddress || !selectedOption?.chainId || !web3Provider) return;
-		let stale = false;
-
-		// load cached first
-		const key = `cachedBalance_${selectedOption.chainId}_${walletAddress}`;
-		const cached = localStorage.getItem(key);
-		if (cached) {
-			setBalance(cached);
-		}
-
-		(async () => {
-			try {
+			if (web3Provider && selectedOption.chainId) {
 				const balanceWei = await web3Provider.eth.getBalance(walletAddress);
 				const balanceEth = web3Provider.utils.fromWei(balanceWei, "ether");
 				const formatted = parseFloat(balanceEth).toLocaleString(undefined, {
@@ -101,25 +87,41 @@ export const NetworkContext = ({ children }) => {
 					maximumFractionDigits: 6,
 				});
 
-				if (!stale) {
-					setBalance(formatted);
-					localStorage.setItem(
-						`cachedBalance_${selectedOption.chainId}_${walletAddress}`,
-						formatted
-					);
-					console.log(
-						`✅ Balance fetched for ${selectedOption.label} = ${formatted}`
-					);
-				}
-			} catch (err) {
-				console.error("❌ error balance", err);
-			}
-		})();
+				setBalance(formatted);
+				if (balanceKey) localStorage.setItem(balanceKey, formatted);
 
-		return () => {
-			stale = true;
-		};
+				console.log(
+					`✅ Balance fetched for ${selectedOption.label} = ${formatted}`
+				);
+			} else if (!selectedOption.chainId && walletType === "sol") {
+				const net = selectedOption?.network || "testnet";
+				const connection = new Connection(
+					selectedOption?.rpc || clusterApiUrl(net)
+				);
+				const lamports = await connection.getBalance(
+					new PublicKey(walletAddress)
+				);
+
+				const solBalance = (lamports / 10 ** 9).toLocaleString(undefined, {
+					minimumFractionDigits: 0,
+					maximumFractionDigits: 6,
+				});
+				setBalance(solBalance);
+				if (balanceKey) localStorage.setItem(balanceKey, solBalance);
+				console.log(`✅ [SOL] Balance ${selectedOption.label} = ${solBalance}`);
+			}
+		} catch (err) {
+			console.error("❌ error balance", err);
+		}
+	}, [walletAddress, selectedOption, web3Provider, balanceKey]);
+
+	// note: auto-load when chain/provider/wallet changes
+	useEffect(() => {
+		if (!walletAddress || !selectedOption) return;
+		getBalance();
 	}, [walletAddress, selectedOption, web3Provider]);
+
+	// console.log(selectedOption);
 
 	return (
 		<NetworkDataContext.Provider
@@ -127,6 +129,7 @@ export const NetworkContext = ({ children }) => {
 				selectedOption,
 				setSelectedOption,
 				balance,
+				setBalance,
 				getBalance, // manual refresh is available
 				web3Provider,
 			}}

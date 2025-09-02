@@ -7,6 +7,7 @@ import { useAccounts } from "../../context/AccountsContext";
 import AddAccountButton from "../buttons/AddAccountButton";
 import SelectNewAccChainButton from "../buttons/SelectNewAccChainButton";
 import NewAccountNameInput from "../common/NewAccountNameInput";
+import { evmConfigs, solConfigs } from "../../utils/constants";
 
 const ManageAccountsModal = ({
 	isOpen,
@@ -25,6 +26,7 @@ const ManageAccountsModal = ({
 	setIsEthereum,
 	selectedAccount,
 	setSelectedAccount,
+	setSelectedOption,
 }) => {
 	const { accountsList } = useAccounts();
 	return (
@@ -70,10 +72,10 @@ const ManageAccountsModal = ({
 								{!accStep2 ? (
 									<ul
 										className={`list-none mt-3 flex flex-col gap-3 h-85 ${
-											accountsList.length > 5
+											accountsList.length >= 5
 												? "overflow-y-scroll"
 												: "overflow-hidden"
-										}`}
+										} py-2`}
 									>
 										{accountsList && accountsList.length > 0 ? (
 											accountsList.map((acc, idx) => {
@@ -88,12 +90,40 @@ const ManageAccountsModal = ({
 															setSelectedAccount({
 																name: acc?.name,
 																address: acc?.account,
+																type: acc?.type,
 															});
+															if (acc?.type === "sol") {
+																setIsEthereum(false);
+																localStorage.setItem("chainId", "null");
+																setSelectedOption(solConfigs[0]);
+															} else {
+																localStorage.setItem(
+																	"chainId",
+																	acc.chainId?.toString()
+																);
+																setSelectedOption(
+																	evmConfigs.find(
+																		(c) => c.chainId === acc.chainId
+																	)
+																);
+																if (acc?.chainId) {
+																	localStorage.setItem(
+																		"chainId",
+																		acc.chainId.toString()
+																	);
+																	const evmConfig = evmConfigs.find(
+																		(c) => c.chainId === acc.chainId
+																	);
+																	setSelectedOption(evmConfig || evmConfigs[0]); // ✅ fallback if find() fails
+																}
+															}
 															onClose();
 														}}
 													>
 														<div className="w-full flex items-center gap-2 overflow-y-scroll my-scroll">
-															<span className="w-1 h-8 bg-black rounded-lg"></span>
+															{selectedAccount?.address === acc?.account && (
+																<span className="w-1 h-8 bg-black rounded-lg"></span>
+															)}
 
 															<div
 																className={`w-full cursor-pointer py-2 flex items-center justify-between px-3 rounded-lg

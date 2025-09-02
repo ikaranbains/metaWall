@@ -17,7 +17,7 @@ import AuthCard from "../common/AuthCard";
 import StepButtons from "../buttons/StepButtons";
 import AuthForm from "../common/AuthForm";
 import StepWrapper from "../common/StepWrapper";
-import { chainConfigs } from "../../utils/constants";
+import { evmConfigs } from "../../utils/constants";
 window.Buffer = Buffer;
 
 export const generateMnemonic = () => {
@@ -86,7 +86,7 @@ const Register = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		if (!selectedOption) console.log("No chain selected");
-		const web3 = new Web3(selectedOption?.rpc || chainConfigs[0]?.rpc);
+		const web3 = new Web3(selectedOption?.rpc || evmConfigs[0]?.rpc);
 		const account = web3.eth.accounts.create();
 
 		const pass = await hashPassword(userDetails?.password);
@@ -96,11 +96,15 @@ const Register = () => {
 			password: pass,
 			recoveryPhrase: recoveryPhrase,
 			userWallet: [
-				{ account: account.address, privateKey: account.privateKey },
+				{
+					account: account.address,
+					privateKey: account.privateKey,
+					type: "evm",
+				},
 			],
 		});
 		localStorage.setItem(`firstLogin_${userDetails?.email}`, "true");
-		localStorage.setItem("chainId", chainConfigs[0]?.chainId);
+		localStorage.setItem("chainId", evmConfigs[0]?.chainId);
 		setuserDetails({
 			id: "",
 			firstname: "",

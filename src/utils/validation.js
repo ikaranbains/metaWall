@@ -1,3 +1,4 @@
+import { PublicKey } from "@solana/web3.js";
 import { getAddress } from "ethers";
 
 export const registerValidation = (values) => {
@@ -47,21 +48,35 @@ export const loginValidation = (values) => {
 	return errors;
 };
 
-export function isValidWalletAddress(address) {
+export function isValidWalletAddress(address, type) {
 	if (typeof address !== "string") return false;
 
-	// Quick regex sanity check
-	const basicRegex = /^0x[a-fA-F0-9]{40}$/;
-	if (!basicRegex.test(address)) return false;
+	if (type === "evm") {
+		// Quick regex sanity check (0x + 40 hex chars)
+		const basicRegex = /^0x[a-fA-F0-9]{40}$/;
+		if (!basicRegex.test(address)) return false;
 
-	try {
-		// ethers v6 getAddress will checksum & validate
-		const checksumAddress = getAddress(address);
-		return (
-			checksumAddress === address ||
-			checksumAddress.toLowerCase() === address.toLowerCase()
-		);
-	} catch {
-		return false;
+		try {
+			// ethers will throw if it's invalid
+			const checksumAddress = getAddress(address);
+			return (
+				checksumAddress === address ||
+				checksumAddress.toLowerCase() === address.toLowerCase()
+			);
+		} catch {
+			return false;
+		}
 	}
+
+	if (type === "sol") {
+		try {
+			// Will throw if not valid base58 or wrong length
+			new PublicKey(address);
+			return true; // valid solana address
+		} catch {
+			return false;
+		}
+	}
+
+	return false;
 }

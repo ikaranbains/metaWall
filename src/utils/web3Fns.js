@@ -1,3 +1,12 @@
+import {
+	Keypair,
+	PublicKey,
+	sendAndConfirmTransaction,
+	SystemProgram,
+	Transaction,
+	VersionedTransaction,
+} from "@solana/web3.js";
+
 export const calculateGasFee = async ({ web3, from, to, amt }) => {
 	if (!web3) throw new Error("No web3 provider");
 	try {
@@ -68,7 +77,7 @@ export const calculateGasFeeToken = async ({
 	}
 };
 
-export const sendTx = async ({
+export const sendEVMTx = async ({
 	web3,
 	from,
 	to,
@@ -164,5 +173,105 @@ export const sendTokenTx = async ({
 	} catch (error) {
 		console.error("sendTokenTx error:", error);
 		throw error;
+	}
+};
+
+export async function getNonce(web3, walletAddress) {
+	try {
+		if (!web3) throw new Error("Web3 instance is required");
+		if (!walletAddress) throw new Error("Wallet address is required");
+
+		const txNonce = await web3.eth.getTransactionCount(walletAddress, "pending");
+		return Number(txNonce);
+	} catch (err) {
+		console.error("❌ Error fetching nonce:", err);
+		throw err; // propagate error so caller can handle
+	}
+}
+
+// note: Solana functions
+export const calculateSolFee = async ({ connection, transaction }) => {
+	try {
+		if (!connection) throw new Error("Connection is required");
+		if (!transaction) throw new Error("Transaction object is required");
+
+		let message;
+		if (transaction instanceof VersionedTransaction) {
+			message = transaction.message;
+		} else if (transaction instanceof Transaction) {
+			message = transaction.compileMessage();
+		} else {
+			throw new Error("Unsupported transaction type!!");
+		}
+
+		const feeResp = await connection.getFeeForMessage(message, "confirmed");
+
+		if (!feeResp || feeResp.value === null) {
+			throw new Error("Unable to calculate fee");
+		}
+
+		const lamports = feeResp.value;
+		const sol = lamports / 10 ** 9;
+
+		return { lamports, sol };
+	} catch (err) {
+		console.error("❌ Error fetching Solana tx fee:", err);
+		throw err;
+	}
+};
+
+export const sendSolTx = async ({
+	connection,
+	from,
+	to,
+	amount,
+	secretKey,
+}) => {
+	try {
+		if (!connection) throw new Error("No Solana connection");
+		if (!from || !to) throw new Error("From/To address missing");
+		if (!amount) throw new Error("Amount is required");
+		if (!secretKey) throw new Error("Private key missing");
+
+		const fromPubKey = new PublicKey(from);
+		const toPubKey = new PublicKey(to);
+		const lamports = Math.floor(Number(amount) * 10 ** 9);
+
+		const balance = await connection.getBalance(fromPubKey);
+		console.log("🔍 Sender balance:", balance / 1e9, "SOL");
+		if (balance < lamports + 5000) {
+			throw new Error("Insufficient funds for tx + fee");
+		}
+
+		const tx = new Transaction().add(
+			SystemProgram.transfer({
+				fromPubkey: fromPubKey,
+				toPubkey: toPubKey,
+				lamports,
+			})
+		);
+
+		const { blockhash } = await connection.getLatestBlockhash("finalized");
+		tx.recentBlockhash = blockhash;
+		tx.feePayer = fromPubKey;
+
+		const senderKeypair = Keypair.fromSecretKey(
+			secretKey instanceof Uint8Array ? secretKey : new Uint8Array(secretKey)
+		);
+
+		console.log("tx built ----------------", tx);
+
+		const signature = await sendAndConfirmTransaction(connection, tx, [
+			senderKeypair,
+		]);
+		console.log("✅ Tx sent with signature:", signature);
+
+		return { signature };
+	} catch (err) {
+		if (err.logs) {
+			console.error("Simulation logs:", err.logs);
+		}
+		console.error("❌ Error sending Solana tx:", err);
+		throw err;
 	}
 };

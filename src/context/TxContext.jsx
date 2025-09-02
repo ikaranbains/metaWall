@@ -1,32 +1,32 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import {useUser} from "../hooks/useUser";
+import { useUser } from "../hooks/useUser";
 import { useNetwork } from "./NetworkContext";
+import { useAccounts } from "./AccountsContext";
+import { getKeys } from "../utils/utilityFn";
 
 const TxDataContext = createContext();
 
 export const TxContext = ({ children }) => {
 	const { selectedOption } = useNetwork();
+	const { selectedAccount } = useAccounts();
 	const [addressInput, setAddressInput] = useState("");
 	const [amtInput, setAmtInput] = useState("");
 	const { data: userData } = useUser();
 	const [privateKey, setPrivateKey] = useState(null);
-	const [tokensList] = useState(() => {
-		try {
-			return JSON.parse(localStorage.getItem("tokensList")) || {};
-		} catch {
-			return {};
-		}
-	});
+	const [secretKey, setSecretKey] = useState(null);
 
-	const [chainId, setChainId] = useState(localStorage.getItem("chainId"));
-	// console.log("tx context --------- chain ----------", chainId);
 	const [selectedAsset, setSelectedAsset] = useState(null);
-	// console.log("the selected -------------------", selectedAsset);
 
 	// note: setting private key from indexDB data
 	useEffect(() => {
-		if (userData) {
-			setPrivateKey(userData?.userWallet[0]?.privateKey);
+		if (!userData || !selectedAccount) return;
+		const account = userData?.userWallet?.find(
+			(acc) => acc.account === selectedAccount?.address
+		);
+
+		if (account) {
+			if (account?.type === "evm") setPrivateKey(account?.privateKey);
+			if (account?.type === "sol") setSecretKey(account?.secretKey);
 		}
 	}, [userData]);
 
@@ -38,19 +38,20 @@ export const TxContext = ({ children }) => {
 
 	// note: setting selected asset
 	useEffect(() => {
-		if (tokensList && chainId && tokensList[chainId]?.length > 0) {
-			const firstAsset = tokensList[chainId][0]; // ✅ bracket notation
-			setSelectedAsset(firstAsset);
-		} else {
-			setSelectedAsset(null); // nothing available
-		}
-	}, [tokensList, chainId, selectedOption]);
+		if (!selectedAccount) return;
 
-	// note: setting chainId from local storage
-	useEffect(() => {
-		const id = localStorage.getItem("chainId");
-		setChainId(id);
-	}, [selectedOption]);
+		const tokensList = JSON.parse(localStorage.getItem("tokensList")) || {};
+		const { tokenKey } = getKeys(
+			selectedOption?.chainId || null,
+			selectedAccount?.address
+		);
+
+		if (tokensList[tokenKey] && tokensList[tokenKey].length > 0) {
+			setSelectedAsset(tokensList[tokenKey][0]); // native first
+		} else {
+			setSelectedAsset(null);
+		}
+	}, [selectedAccount, selectedOption]);
 
 	return (
 		<TxDataContext.Provider
@@ -62,6 +63,8 @@ export const TxContext = ({ children }) => {
 				privateKey,
 				selectedAsset,
 				setSelectedAsset,
+				secretKey,
+				setSecretKey,
 			}}
 		>
 			{children}

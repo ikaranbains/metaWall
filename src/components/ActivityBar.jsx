@@ -1,33 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import { useTxList } from "../hooks/useTxList";
-import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
 import { TbDotsVertical } from "react-icons/tb";
 import { MdOutlineArrowOutward } from "react-icons/md";
 import { GiReceiveMoney } from "react-icons/gi";
 import { GoPlus } from "react-icons/go";
 import { BiRefresh } from "react-icons/bi";
 import { useAccounts } from "../context/AccountsContext";
+import { useNetwork } from "../context/NetworkContext";
+import { formatNativeAmount, formatTokenAmount } from "../utils/utilityFn";
+
 const ActivityBar = ({
 	setShowImportModal,
-	selectedOption,
 	cachedBalance,
 	refreshTokensList,
 	refreshing,
+	key2,
 }) => {
 	const [panelSelected, setPanelSelected] = useState(1);
-	const chainId = localStorage.getItem("chainId");
-	const { selectedAccount } = useAccounts();
-	const walletAddress = selectedAccount?.address;
-	const { transactions, loading, fetchTxs, hasMore, hasInitialFetch } =
-		useTxList(chainId);
 	const loaderRef = useRef(null);
+	const { selectedAccount } = useAccounts();
+	const { selectedOption } = useNetwork();
+
+	const walletAddress = selectedAccount?.address;
+	const walletType = selectedAccount?.type; // "evm" or "sol"
+
+	const { transactions, loading, fetchTxs, hasMore, hasInitialFetch } =
+		useTxList();
 
 	const [showMenu, setShowMenu] = useState(false);
 	const menuRef = useRef(null);
-
 	const tokensList = JSON.parse(localStorage.getItem("tokensList")) || [];
-
-	const chain = selectedOption?.chainId;
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -36,9 +38,7 @@ const ActivityBar = ({
 			}
 		};
 		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
+		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, [menuRef]);
 
 	useEffect(() => {
@@ -50,15 +50,105 @@ const ActivityBar = ({
 			},
 			{ threshold: 1 }
 		);
-
-		if (loaderRef.current) {
-			observer.observe(loaderRef.current);
-		}
-
+		if (loaderRef.current) observer.observe(loaderRef.current);
 		return () => {
 			if (loaderRef.current) observer.unobserve(loaderRef.current);
 		};
 	}, [fetchTxs, loading, hasMore]);
+
+	// ----------------------------------------------------------
+	// Helper: Render a single tx row depending on type
+	// ----------------------------------------------------------
+	const renderTransaction = (tx, idx) => {
+		if (walletType === "evm") {
+			const isSend = tx.from?.toLowerCase() === walletAddress?.toLowerCase();
+			return (
+				<div
+					key={idx}
+					className="pb-4 p-3 flex items-center justify-between border-b border-gray-200 last:border-b-0"
+				>
+					<div className="flex gap-3">
+						<span className="w-10 h-10 bg-blue-100 relative rounded-full flex items-center justify-center">
+							{isSend ? (
+								<MdOutlineArrowOutward size={20} />
+							) : (
+								<GiReceiveMoney size={22} />
+							)}
+							<span className="w-5 h-5 absolute -bottom-1.5 -right-1.5 rounded-full bg-black text-white text-[.7rem] flex items-center justify-center font-thin">
+								{selectedOption?.name?.[0]}
+							</span>
+						</span>
+						<div className="flex justify-center flex-col">
+							<span className="text-lg font-medium text-gray-800">
+								{isSend ? "Sent" : "Received"}
+							</span>
+							<span className="text-xs text-gray-500">
+								Hash: {tx.hash?.slice(0, 12)}...
+							</span>
+								<span className="text-xs text-gray-400">
+								Block: {tx.blockNumber}
+							</span>
+							{tx.timeStamp && (
+								<span className="text-xs text-gray-400">
+									{new Date(Number(tx.timeStamp) * 1000).toLocaleString()}
+								</span>
+							)}
+						</div>
+					</div>
+					<div className="text-xl">
+						{tx.type === "token"
+							? `${Number(tx.value) / 10 ** tx.tokenDecimal} ${tx.tokenSymbol}`
+							: `${Number(tx.value) / 10 ** 18} ${
+									selectedOption?.nativeCurrency?.symbol
+							  }`}
+					</div>
+				</div>
+			);
+		}
+
+		if (walletType === "sol") {
+			return (
+				<div
+					key={idx}
+					className="pb-4 p-3 flex items-center justify-between border-b border-gray-200 last:border-b-0"
+				>
+					<div className="flex gap-3">
+						<span className="w-10 h-10 bg-green-100 relative rounded-full flex items-center justify-center">
+							<GiReceiveMoney size={20} />
+							<span className="w-5 h-5 absolute -bottom-1.5 -right-1.5 rounded-full bg-black text-white text-[.7rem] flex items-center justify-center font-thin">
+								S
+							</span>
+						</span>
+						<div className="flex justify-center flex-col">
+							<span className="text-lg font-medium text-gray-800">
+								Solana Tx
+							</span>
+							<span className="text-xs text-gray-500">
+								Hash: {tx.hash?.slice(0, 12)}...
+							</span>
+							{tx.blockTime && (
+								<span className="text-xs text-gray-400">
+									{new Date(Number(tx.blockTime) * 1000).toLocaleString()}
+								</span>
+							)}
+						</div>
+					</div>
+					<div className="text-xl">
+						{/* Approximation: lamport change for the account */}
+						{tx.meta && tx.meta.postBalances && tx.meta.preBalances
+							? `${
+									(tx.meta.postBalances[0] - tx.meta.preBalances[0]) / 1e9
+							  } SOL`
+							: "—"}
+					</div>
+				</div>
+			);
+		}
+
+		return null;
+	};
+
+	// ----------------------------------------------------------
 
 	return (
 		<div className="w-full flex items-center flex-col px-10 py-3">
@@ -68,7 +158,7 @@ const ActivityBar = ({
 					<div
 						className={`absolute bottom-0 h-0.5 bg-black transition-transform duration-100 ease-in-out`}
 						style={{
-							width: "50%", // since you have 2 tabs
+							width: "50%",
 							transform:
 								panelSelected === 1 ? "translateX(0%)" : "translateX(100%)",
 						}}
@@ -102,6 +192,7 @@ const ActivityBar = ({
 				</div>
 			</div>
 
+			{/* Tokens/Activity Panel */}
 			<div className="relative w-full mt-2 h-8 flex items-center justify-end px-2">
 				<TbDotsVertical
 					onClick={() => setShowMenu(true)}
@@ -118,7 +209,6 @@ const ActivityBar = ({
 								onClick={() => setShowImportModal(true)}
 								className="flex items-center justify-center py-3 gap-4 hover:bg-zinc-100 border-b border-zinc-200 cursor-pointer"
 							>
-								{" "}
 								<div className="w-[85%] flex items-center gap-4">
 									<span>
 										<GoPlus />
@@ -126,12 +216,10 @@ const ActivityBar = ({
 									Import tokens
 								</div>
 							</li>
-
 							<li
 								onClick={refreshTokensList}
 								className="flex items-center justify-center py-3 gap-4 hover:bg-zinc-100 border-b border-zinc-200 cursor-pointer"
 							>
-								{" "}
 								<div className="w-[85%] flex items-center gap-4">
 									<span>
 										<BiRefresh />
@@ -145,10 +233,11 @@ const ActivityBar = ({
 			</div>
 
 			<div className="flex items-center w-full h-full mt-2">
+				{/* Tokens Tab */}
 				<div
 					className={`w-full ${
 						panelSelected === 1 ? "block" : "hidden"
-					} flex flex-col items-center h-[45vh] overflow-y-scroll my-scroll`}
+					} h-[45vh] overflow-y-scroll my-scroll`}
 				>
 					{refreshing ? (
 						<p className="mt-10 text-gray-500 text-sm select-none animate-pulse">
@@ -198,6 +287,8 @@ const ActivityBar = ({
 						</p>
 					)}
 				</div>
+
+				{/* Activity Tab */}
 				<div
 					className={`w-full ${
 						panelSelected === 2 ? "block" : "hidden"
@@ -224,7 +315,9 @@ const ActivityBar = ({
 									{txs.map((tx, idx) => (
 										<div
 											key={idx}
-											className="pb-4 p-3 flex items-center justify-between border-b border-gray-200 last:border-b-0"
+											className={`pb-4 p-3 flex items-center justify-between ${
+												idx === txs.length - 1 ? "" : "border-b border-gray-200"
+											} last:border-b-0`}
 										>
 											<div className="flex gap-3">
 												<span className="w-10 h-10 bg-blue-100 relative rounded-full flex items-center justify-center">
@@ -272,22 +365,23 @@ const ActivityBar = ({
 								</div>
 							</div>
 						))}
-
-						{loading && <p className="text-center text-gray-500">Loading...</p>}
-						<div ref={loaderRef} className="h-10"></div>
-
-						{!loading && hasInitialFetch && transactions.length === 0 && (
-							<p className="text-center text-gray-400 text-sm">
-								No transactions yet
-							</p>
-						)}
-
-						{!loading && transactions.length > 0 && !hasMore && (
-							<p className="text-center text-gray-400 text-sm">
-								No more transactions
-							</p>
-						)}
 					</div>
+
+					{transactions.length === 0 && hasInitialFetch && !loading && (
+						<p className="text-center text-gray-400 text-sm">
+							No transactions yet
+						</p>
+					)}
+
+					{transactions.map((tx, idx) => renderTransaction(tx, idx))}
+
+					{loading && <p className="text-center text-gray-500">Loading...</p>}
+					<div ref={loaderRef} className="h-10"></div>
+					{/* {!hasMore && (
+						<p className="text-center text-gray-400 text-xl">
+							No more transactions
+						</p>
+					)} */}
 				</div>
 			</div>
 		</div>

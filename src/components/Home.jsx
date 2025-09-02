@@ -4,7 +4,7 @@ import { useNetwork } from "../context/NetworkContext";
 import { useNavigate } from "react-router-dom";
 import Web3 from "web3";
 import ERC20ABI from "../ABI/TOKEN_ABI.json";
-import { getCryptoPrices } from "../utils/utilityFn";
+import { getCryptoPrices, getKeys } from "../utils/utilityFn";
 import ReceiveModal from "./modals/ReceiveModal";
 import ImportTokensModal from "./modals/ImportTokensModal";
 import NetworkSelector from "./NetworkSelector";
@@ -17,6 +17,8 @@ import ActivityBar from "./ActivityBar";
 import ManageAccountsModal from "./modals/ManageAccountsModal";
 import { useAccounts } from "../context/AccountsContext";
 import { useAddEthAccount } from "../hooks/useAddEthAccount";
+import { useAddSolAccount } from "../hooks/useAddSolAccount";
+import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 
 const Home = () => {
 	const navigate = useNavigate();
@@ -36,22 +38,20 @@ const Home = () => {
 	const [newAccNameInpETH, setNewAccNameInpETH] = useState("");
 	const [newAccNameInpSOL, setNewAccNameInpSOL] = useState("");
 	const [isEthereum, setIsEthereum] = useState(false);
-	const [tokensList, setTokensList] = useState({
-		11155111: [],
-		80002: [],
-		97: [],
-	});
-	const web3 = new Web3(selectedOption?.rpc);
+	const [tokensList, setTokensList] = useState({});
+
 	const chainId = selectedOption?.chainId;
-	let key = `cachedBalance_${chainId}_${walletAddress}`;
-	const key2 = `${chainId}_${walletAddress}`;
-	const cachedBalance = localStorage.getItem(key);
+	const { balanceKey, tokenKey } = getKeys(chainId, walletAddress);
+
+	const web3 = chainId ? new Web3(selectedOption?.rpc) : null;
+	const cachedBalance = localStorage.getItem(balanceKey);
+	// console.log("cached -----------------", cachedBalance);
 	const [refreshing, setRefreshing] = useState(false);
 
 	const handleChange = async (option) => {
 		setSelectedOption(option);
 		toast.success("Chain changed to " + option?.label);
-		localStorage.setItem("chainId", option?.chainId);
+		localStorage.setItem("chainId", option?.chainId ?? "null");
 	};
 
 	const handleTokenAddressChange = (e) => {
@@ -86,14 +86,12 @@ const Home = () => {
 
 	const handleImportToken = () => {
 		localStorage.setItem(`tokensList`, JSON.stringify(tokensList));
-
 		toast.success("Token imported!!");
 		setShowImportModal(false);
 		setDisabled(true);
 		setShowTokenDetails(false);
 		setStep2(false);
 		setTokenAddress("");
-		// setIsImported(true);
 	};
 
 	const refreshTokensList = async () => {
@@ -102,10 +100,23 @@ const Home = () => {
 
 		try {
 			const updatedTokens = await Promise.all(
-				tokensList[chainId].map(async (token) => {
+				(tokensList[tokenKey] || []).map(async (token) => {
 					if (token.tokenType === "native") {
-						const nativeBalance = await web3.eth.getBalance(walletAddress);
-						const formatted = Number(nativeBalance) / 10 ** token.decimals;
+						let formatted = 0;
+						if (chainId && web3) {
+							const nativeBalance = await web3.eth.getBalance(walletAddress);
+							formatted = Number(nativeBalance) / 10 ** token.decimals;
+						} else {
+							const connection = new Connection(
+								selectedOption?.rpc || clusterApiUrl("testnet"),
+								"confirmed"
+							);
+							const lamports = await connection.getBalance(
+								new PublicKey(walletAddress)
+							);
+							formatted = lamports / 10 ** token.decimals;
+						}
+
 						const { price, message } = await getCryptoPrices(token.symbol);
 
 						return {
@@ -130,7 +141,7 @@ const Home = () => {
 				})
 			);
 
-			const updatedList = { ...tokensList, [chainId]: updatedTokens };
+			const updatedList = { ...tokensList, [tokenKey]: updatedTokens };
 			setTokensList(updatedList);
 			localStorage.setItem("tokensList", JSON.stringify(updatedList));
 			toast.success("Token list refreshed!");
@@ -162,42 +173,47 @@ const Home = () => {
 		});
 	};
 
+	const { mutate: addSolAccount } = useAddSolAccount();
+
 	const handleAddNewAccSOL = () => {
-		alert("new sol acc created!!");
-		console.log(newAccNameInpSOL);
-		setNewAccNameInpSOL("");
+		addSolAccount(newAccNameInpSOL, {
+			onSuccess: () => {
+				setNewAccNameInpSOL("");
+				toast.success("New Account Created Successfully!!");
+				setAccStep2(false);
+				setAccStep3(false);
+			},
+		});
 	};
 
 	// note: add native currency in tokens list
 	useEffect(() => {
-		const chain = selectedOption?.chainId;
-		if (!chain) return;
-
 		const handleNativePrice = async () => {
-			const { price, message } = await getCryptoPrices(
-				selectedOption?.nativeCurrency?.symbol
-			);
+			if (!walletAddress || !selectedOption || !selectedAccount) return;
+			const nativeCurrency = selectedOption?.nativeCurrency;
+			if (!nativeCurrency) return;
+
+			const { price, message } = await getCryptoPrices(nativeCurrency?.symbol);
+
+			const nativeToken = {
+				name: nativeCurrency?.name,
+				symbol: nativeCurrency?.symbol,
+				decimals: nativeCurrency?.decimals,
+				formattedBalance: cachedBalance ? Number(cachedBalance) : 0,
+				price: price ? `$ ${Number(price)}` : message,
+				address: null,
+				tokenType: "native",
+			};
+
+			// console.log("native token", nativeToken);
 
 			setTokensList((prev) => {
-				const currentList = prev[key2] || [];
-				// if (prev[chain].length > 0) return prev;
+				const currentList = prev[tokenKey] || [];
 				if (currentList.some((t) => t.tokenType === "native")) return prev;
-
-				const nativeToken = {
-					name: selectedOption?.nativeCurrency?.name,
-					symbol: selectedOption?.nativeCurrency?.symbol,
-					decimals: selectedOption?.nativeCurrency?.decimals,
-					formattedBalance: cachedBalance ? cachedBalance : 0,
-					price: price ? `$ ${Number(price)}` : message,
-					address: null,
-					tokenType: "native",
-				};
-
 				const updated = {
 					...prev,
-					[key2]: [nativeToken, ...currentList],
+					[tokenKey]: [nativeToken, ...currentList],
 				};
-
 				localStorage.setItem("tokensList", JSON.stringify(updated));
 				return updated;
 			});
@@ -206,6 +222,7 @@ const Home = () => {
 		handleNativePrice();
 	}, [selectedOption, balance, walletAddress]);
 
+	// note: fetch token details
 	useEffect(() => {
 		const fetchTokenDetails = async () => {
 			// const chain = selectedOption?.chainId;
@@ -216,9 +233,8 @@ const Home = () => {
 				return;
 			}
 
-			if (tokenAddress.length === 42) {
+			if (tokenAddress.length === 42 && chainId) {
 				const res = await getTokenDetails();
-
 				if (!res) {
 					setShowTokenDetails(false);
 					setDisabled(true);
@@ -233,12 +249,11 @@ const Home = () => {
 					price: res.price ? Number(res.price) : null,
 					tokenType: "custom",
 				};
-				// console.log("duplicate token found ---------------------");
-				// update existing token details
-				setTokensList((prev) => {
-					const current = prev[key] || [];
 
-					const existing = current.find(
+				setTokensList((prev) => {
+					const current = prev[tokenKey] || [];
+
+					const existingToken = current.find(
 						(item) => item.address === tokenAddress
 					);
 
@@ -259,9 +274,7 @@ const Home = () => {
 						updatedList = [...current, newToken];
 					}
 
-					const updated = { ...prev, [key2]: updatedList };
-
-					console.log("updated------------------", updated);
+					const updated = { ...prev, [tokenKey]: updatedList };
 					localStorage.setItem("tokensList", JSON.stringify(updated));
 					return updated;
 				});
@@ -275,9 +288,7 @@ const Home = () => {
 
 	useEffect(() => {
 		const stored = localStorage.getItem("tokensList");
-		if (stored) {
-			setTokensList(JSON.parse(stored));
-		}
+		if (stored) setTokensList(JSON.parse(stored));
 	}, []);
 
 	return (
@@ -303,6 +314,7 @@ const Home = () => {
 					setStep2={setStep2}
 					step2={step2}
 					handleImportToken={handleImportToken}
+					key2={tokenKey}
 				/>
 			)}
 			{showManageAccountModal && (
@@ -329,6 +341,7 @@ const Home = () => {
 					setIsEthereum={setIsEthereum}
 					selectedAccount={selectedAccount}
 					setSelectedAccount={setSelectedAccount}
+					setSelectedOption={setSelectedOption}
 				/>
 			)}
 
@@ -344,6 +357,7 @@ const Home = () => {
 							<NetworkSelector
 								selectedOption={selectedOption}
 								handleChange={handleChange}
+								selectedAccount={selectedAccount}
 							/>
 						</div>
 						<Accounts
@@ -376,6 +390,7 @@ const Home = () => {
 						cachedBalance={cachedBalance}
 						refreshTokensList={refreshTokensList}
 						refreshing={refreshing}
+						key2={tokenKey}
 					/>
 				</div>
 			</div>
