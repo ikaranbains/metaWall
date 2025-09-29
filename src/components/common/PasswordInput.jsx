@@ -18,7 +18,7 @@ const PasswordInput = ({
 		<div className="flex flex-col">
 			<Label htmlFor={name} content="Password" required={true} />
 			<div
-				className={`w-[20vw]  ${
+				className={`md:w-[22vw] lg:w-[20vw]  ${
 					error["password"] ? "border-red-500" : "border-zinc-400"
 				} border outline-none rounded flex items-center mt-2 ${divClass}`}
 			>

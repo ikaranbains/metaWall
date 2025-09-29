@@ -9,7 +9,7 @@ const Label = ({
 	...props
 }) => {
 	return (
-		<label htmlFor={htmlFor} className={`${className} flex gap-1`}>
+		<label htmlFor={htmlFor} className={`${className} flex gap-1`} {...props}>
 			{children ? (
 				children
 			) : (

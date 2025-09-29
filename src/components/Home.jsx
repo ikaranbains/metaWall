@@ -45,7 +45,6 @@ const Home = () => {
 
 	const web3 = chainId ? new Web3(selectedOption?.rpc) : null;
 	const cachedBalance = localStorage.getItem(balanceKey);
-	// console.log("cached -----------------", cachedBalance);
 	const [refreshing, setRefreshing] = useState(false);
 
 	const handleChange = async (option) => {

@@ -231,7 +231,7 @@ export const sendSolTx = async ({
 		if (!connection) throw new Error("No Solana connection");
 		if (!from || !to) throw new Error("From/To address missing");
 		if (!amount) throw new Error("Amount is required");
-		if (!secretKey) throw new Error("Private key missing");
+		if (!secretKey) throw new Error("Secret key missing");
 
 		const fromPubKey = new PublicKey(from);
 		const toPubKey = new PublicKey(to);

@@ -23,7 +23,7 @@ const Input = ({
 				onChange={onChange}
 				className={`outline-none ${
 					error[name] ? "border border-red-500" : "border border-zinc-400"
-				} rounded px-3 py-1.5 mt-2 w-[20vw] ${className}`}
+				} rounded px-3 py-1.5 mt-2 md:w-[22vw] lg:w-[20vw] ${className}`}
 				{...props}
 			/>
 			{error && error[name] && (
